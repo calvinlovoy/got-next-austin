@@ -41,7 +41,7 @@
   header{position:relative;overflow:hidden;background:var(--band);color:var(--band-ink);border-radius:6px;padding:18px 22px 26px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
   header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:9px;background:repeating-linear-gradient(-55deg,var(--accent) 0 16px,transparent 16px 26px)}
   .brand{display:flex;align-items:center;gap:14px}
-  .ball{width:54px;height:54px;flex:none}
+  .ball{width:62px;height:62px;flex:none}
   .mark{font:italic 800 56px/.82 var(--display);letter-spacing:-.5px;text-transform:uppercase;margin:0}
   .mark span{color:var(--accent)}
   .clock{display:flex;align-items:center;gap:9px;font:italic 700 17px/1 var(--display);font-variant-numeric:tabular-nums;text-transform:uppercase;padding:9px 14px;border:2px solid var(--accent);border-radius:4px;background:#000;color:#fff}
@@ -137,7 +137,7 @@
   @media (max-width:860px){
     .main{grid-template-columns:1fr}
     .radar{position:static;max-width:440px;width:100%;margin:0 auto}
-    .mark{font-size:42px} .ball{width:42px;height:42px} .headline{font-size:30px}
+    .mark{font-size:42px} .ball{width:48px;height:48px} .headline{font-size:30px}
   }
   @media (prefers-reduced-motion: reduce){.pulse{animation:none;opacity:0}}
 </style>
@@ -146,7 +146,11 @@
 <div class="wrap">
   <header>
     <div class="brand">
-      <svg class="ball" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="27" fill="#ee6730" stroke="#17130f" stroke-width="3"/><path d="M3 30h54M30 3v54M10.5 11.5c9 8 9 29 0 37M49.5 11.5c-9 8-9 29 0 37" fill="none" stroke="#17130f" stroke-width="2.6" stroke-linecap="round"/></svg>
+      <svg class="ball" viewBox="0 0 60 60" aria-hidden="true" fill="none" stroke="#17130f" stroke-linecap="round">
+        <g stroke-width="2.6"><circle cx="19" cy="21" r="16" fill="#ee6730"/><path d="M3 21h32M19 5v32M8 9.5c5.5 5 5.5 18 0 23M30 9.5c-5.5 5-5.5 18 0 23" stroke-width="2"/></g>
+        <g stroke-width="2.6"><circle cx="41" cy="21" r="16" fill="#ffffff"/><path d="M41 21c0-7 3-12 8.5-14.500M41 21c6 3.500 9.500 8.500 9 14.500M41 21c-6 3.500-12 3-16-.500M33 7.500c-2 5-1 10 2 14M56.500 18c-5-1-10 .500-13.500 4M38 36.500c3.500-3.500 5-8 4.500-13" stroke-width="2"/></g>
+        <g stroke-width="2.6"><circle cx="30" cy="41" r="16" fill="#d9f23c"/><path d="M17.500 31c7 4.500 7 15.500 0 20M42.500 31c-7 4.500-7 15.500 0 20" stroke-width="2.200"/></g>
+      </svg>
       <div>
       <p class="mark">Got <span>Next</span></p>
       </div>
