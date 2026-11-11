@@ -4,10 +4,11 @@ Pick a sport and a distance, and see which Austin courts are open to walk onto r
 
 **What it does**
 
-- Six sports: basketball, pickleball, volleyball, badminton, tennis and futsal
+- Six sports: basketball, pickleball, volleyball, badminton, tennis and soccer
 - Indoor, Outdoor or Both
 - A 1 to 15 mile radius from one of 16 Austin neighborhoods
-- A street map (Leaflet and OpenStreetMap, no API key) with numbered pins colored by status, plus a court-style radar view
+- A street map (Leaflet and OpenStreetMap, no API key) with numbered pins colored by status and a compass
+- Sort results by open first, nearest, closes latest or name
 - "Use my location", or drag the start pin, to measure from where you are
 - Directions links that open Google Maps with the venue as the destination
 - Status that follows the clock in Austin time: cards flip to closed when a session ends, with an alert 30 minutes before
@@ -20,7 +21,7 @@ It is a single file with no build step. Open `index.html` in a browser, or serve
 **Data**
 
 - Indoor times are the free open play hours each City of Austin recreation center posted on its gym schedule, collected November 11, 2026.
-- Outdoor courts are treated as open during city park hours, 5 a.m. to 10 p.m.
+- Outdoor courts and fields come from the city's pickleball, sand volleyball and soccer pages. They are treated as open during city park hours, 5 a.m. to 10 p.m., unless the city posts shorter court hours.
 - Venue coordinates are approximate, so distances are straight-line estimates.
 - The city changes gym schedules without notice. Venues with an older schedule are marked "Possibly outdated" in the app.
 

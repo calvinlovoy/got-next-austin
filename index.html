@@ -8,13 +8,12 @@
 <link href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@1,700;1,800&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 <style>
-  /* Layout idea: a black scoreboard band up top, slanted jersey type, basketball orange for every action, a hardwood radar or street map beside the live list. */
+  /* Layout idea: a black scoreboard band up top, slanted jersey type, basketball orange for every action, a street map beside the live list. */
   :root{
     --bg:#f2f0ed; --surface:#ffffff; --ink:#17130f; --muted:#675f57; --line:#dcd6ce;
     --accent:#ee6730; --accent-ink:#b23f0a; --on-accent:#17130f;
     --ok:#157a40; --warn:#946a00; --bad:#c2261b;
     --band:#17130f; --band-ink:#f6f1ea; --band-muted:#c9c0b6;
-    --apron:#17130f; --apronink:#f6f1ea; --court:#dcab72; --courtline:#2a1c10;
     --display:"Kanit","Arial Black",Impact,sans-serif;
     --body:"Barlow","Helvetica Neue",Arial,sans-serif;
   }
@@ -71,9 +70,8 @@
   .fromrow .btn{min-height:38px}
 
   .main{display:grid;grid-template-columns:minmax(300px,420px) 1fr;gap:20px;align-items:start}
-  .radar{position:sticky;top:14px;display:flex;flex-direction:column;gap:10px}
-  #radar{width:100%;height:auto;display:block;border-radius:6px}
-  #view{align-self:flex-start;margin-left:4px}
+  .mapcol{position:sticky;top:14px;display:flex;flex-direction:column;gap:10px}
+  .main.nomap{grid-template-columns:1fr}
   #map{height:400px;border-radius:6px;border:2px solid var(--ink);z-index:0;background:var(--surface)}
   .legend{display:flex;flex-direction:column;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:10px 12px;font-size:13.5px;font-weight:600}
   .lrow{position:relative;padding-left:68px;display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center}
@@ -82,11 +80,10 @@
   .legend i.shape{background:transparent;border:2px solid var(--ink)}
   .legend i.dia{border-radius:2px;transform:rotate(45deg) scale(.86)}
   .legend i.start{background:#17130f;border-color:#fff;box-shadow:0 0 0 2px #ee6730}
-  .legend .north{width:12px;height:12px;margin-right:5px;vertical-align:-1px}
-  .dot{cursor:pointer}
-  .dot text{font:700 8px var(--body);text-anchor:middle;dominant-baseline:central;pointer-events:none}
-  .pulse{transform-box:fill-box;transform-origin:center;animation:pulse 2.2s ease-out infinite}
-  @keyframes pulse{0%{transform:scale(1);opacity:.75}100%{transform:scale(2.3);opacity:0}}
+  .compass{width:56px;background:rgba(255,255,255,.92);border:2px solid #17130f;border-radius:4px;padding:3px 3px 1px;box-shadow:0 1px 5px rgba(0,0,0,.35)}
+  .compass svg{display:block;width:100%;height:auto}
+  .sortbar{display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap;margin-top:6px}
+  .chip.sm{padding:4px 12px;font-size:13.5px}
   .pin{width:26px;height:26px;display:grid;place-items:center;font:700 12.5px var(--body);color:#17130f;border:2px solid #17130f;border-radius:50%;box-shadow:0 1px 5px rgba(0,0,0,.45);cursor:pointer}
   .pin.out{border-radius:5px;transform:rotate(45deg) scale(.88)} .pin.out span{transform:rotate(-45deg)}
   .pin.open,.pin.soon{background:#ee6730} .pin.later{background:#fff} .pin.closed{background:#8b8d91;color:#fff} .pin.reported{background:#17130f;color:#fff;border:3px solid #e0281b}
@@ -95,20 +92,20 @@
   .headline{font:italic 800 38px/.98 var(--display);text-transform:uppercase;letter-spacing:-.3px;margin:0 0 6px;text-wrap:balance}
   .headline b{color:var(--accent)}
   .list{display:flex;flex-direction:column;gap:10px;margin-top:12px}
-  .card{background:var(--surface);border:1px solid var(--line);border-left:7px solid var(--s,var(--line));border-radius:4px;padding:12px 14px;display:flex;flex-direction:column;gap:7px;scroll-margin-top:14px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:0 0 12px;display:flex;flex-direction:column;gap:8px;scroll-margin-top:14px;overflow:hidden}
+  .card>*{margin-inline:14px}
   .card.flash{box-shadow:0 0 0 3px var(--accent)}
-  .card.open{--s:var(--ok)} .card.soon{--s:var(--warn)} .card.reported{--s:var(--bad)} .card.later{--s:var(--ink)}
-  .top{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
-  .name{display:flex;gap:10px;align-items:baseline;min-width:0}
-  .num{font:italic 800 22px/1 var(--display);color:var(--accent);font-variant-numeric:tabular-nums}
-  .name h3{margin:0;font-size:17.5px;font-weight:700;overflow-wrap:anywhere}
+  .card>.top{margin-inline:0;display:flex;gap:8px 12px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--band);color:var(--band-ink);padding:9px 16px 9px 14px;border-bottom:3px solid var(--accent)}
+  .name{display:flex;gap:12px;align-items:center;min-width:0}
+  .num{font:italic 800 18px/1 var(--display);background:var(--accent);color:#17130f;padding:5px 10px 5px 9px;border-radius:2px;transform:skewX(-8deg);font-variant-numeric:tabular-nums}
+  .name h3{margin:0;font:italic 700 17.5px/1.15 var(--display);text-transform:uppercase;overflow-wrap:anywhere}
   .pill{font:italic 700 13.5px/1.2 var(--display);text-transform:uppercase;border-radius:3px;padding:4px 10px;border:2px solid currentColor;white-space:nowrap;transform:skewX(-8deg)}
-  .pill.open{color:var(--ok)} .pill.soon{color:var(--warn)} .pill.reported{color:var(--bad)} .pill.later{color:var(--ink)} .pill.closed{color:var(--muted)}
+  .pill.open{background:#3ddc84;border-color:#3ddc84;color:#0b1f13} .pill.soon{background:#ffd04a;border-color:#ffd04a;color:#221a00} .pill.reported{background:#e0281b;border-color:#e0281b;color:#fff} .pill.later{background:#f6f1ea;border-color:#f6f1ea;color:#17130f} .pill.closed{color:#c9c0b6;border-color:#6b635b}
   .meta{color:var(--muted);font-size:14px}
   .wins{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:14px}
   .win{border:1.5px solid var(--line);border-radius:3px;padding:1px 8px;font-weight:600;font-variant-numeric:tabular-nums}
   .win.cur{border-color:var(--ok);color:var(--ok);font-weight:700}
-  .note{font-size:14px;margin:0}
+  .note{font-size:14px;margin-block:0}
   .flag{color:var(--warn);font-weight:700}
   .alert{border:2px solid var(--bad);border-radius:4px;padding:8px 10px;font-size:14px}
   .acts{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;font-size:14px}
@@ -125,13 +122,17 @@
   .week dt{font-weight:700} .week dd{margin:0;color:var(--muted)}
   .empty{background:var(--surface);border:2px dashed var(--line);border-radius:4px;padding:18px;display:flex;flex-direction:column;gap:10px;align-items:flex-start}
 
-  .board{background:var(--band);color:var(--band-ink);border-radius:6px;padding:14px 18px;border-left:7px solid var(--accent)}
+  .board{position:relative;overflow:hidden;background:var(--band);color:var(--band-ink);border-radius:6px;padding:26px 20px 10px}
+  .board::before{content:"";position:absolute;left:0;right:0;top:0;height:9px;background:repeating-linear-gradient(-55deg,var(--accent) 0 16px,transparent 16px 26px)}
+  .board h2{display:flex;align-items:center;gap:12px;font-size:28px}
+  .board h2::before{content:"";width:11px;height:11px;border-radius:50%;background:#e0281b;box-shadow:0 0 0 4px rgba(224,40,27,.32)}
+  .board li strong{font:italic 700 15.5px/1.2 var(--display);text-transform:uppercase}
   .board .hint{color:var(--band-muted)}
   h2{font:italic 800 25px/1 var(--display);text-transform:uppercase;margin:0 0 8px}
-  .board ul{list-style:none;margin:4px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
-  .board li{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;font-size:14.5px}
-  .tick{font:italic 700 13px/1 var(--display);letter-spacing:.5px;text-transform:uppercase}
-  .tick.bad{color:#ff7166} .tick.warn{color:#ffd04a}
+  .board ul{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column}
+  .board li{display:flex;gap:6px 12px;align-items:center;flex-wrap:wrap;font-size:15px;padding:10px 0;border-top:1px solid #332c25}
+  .tick{font:italic 700 13px/1 var(--display);letter-spacing:.5px;text-transform:uppercase;padding:5px 10px;border-radius:2px;transform:skewX(-8deg)}
+  .tick.bad{background:#e0281b;color:#fff} .tick.warn{background:#ffd04a;color:#221a00}
   .about{color:var(--muted);font-size:14px;max-width:78ch}
   .about h2{color:var(--ink)}
   .about p{margin:0 0 6px}
@@ -142,10 +143,10 @@
 
   @media (max-width:860px){
     .main{grid-template-columns:1fr}
-    .radar{position:static;max-width:440px;width:100%;margin:0 auto}
+    .mapcol{position:static;width:100%}
+    #map{height:320px}
     .mark{font-size:42px} .ball{width:48px;height:48px} .headline{font-size:30px}
   }
-  @media (prefers-reduced-motion: reduce){.pulse{animation:none;opacity:0}}
 </style>
 </head>
 <body>
@@ -190,13 +191,9 @@
   </section>
 
   <div class="main">
-    <aside class="radar" aria-label="Map of matches">
-      <div class="seg" id="view" role="group" aria-label="Map style" hidden>
-        <button type="button" data-v="map">Street map</button><button type="button" data-v="radar">Radar</button>
-      </div>
-      <div id="map" hidden></div>
-      <p class="hint" id="mapHint" hidden>Drag the dark pin to move your starting point. Tap a numbered pin to jump to its card.</p>
-      <svg id="radar" viewBox="-120 -120 240 240" role="img" aria-label="Matches plotted by direction and distance from your starting point"></svg>
+    <aside class="mapcol" id="mapcol" aria-label="Map of matches" hidden>
+      <div id="map"></div>
+      <p class="hint">Drag the dark pin to move your starting point. Tap a numbered pin to jump to its card.</p>
       <div class="legend" role="group" aria-label="Map legend">
         <div class="lrow"><span class="lab">Status</span>
           <span><i style="background:#ee6730"></i>Open</span>
@@ -208,13 +205,12 @@
           <span><i class="shape"></i>Indoor gym</span>
           <span><i class="shape dia"></i>Outdoor court</span>
           <span><i class="start"></i>Your start</span>
-          <span><svg class="north" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 .8l4.200 10.400L6 8.700l-4.200 2.500z" fill="currentColor"/></svg>North</span>
         </div>
       </div>
     </aside>
     <section aria-live="polite">
       <h1 class="headline" id="headline">Finding courts</h1>
-      <p class="hint" id="sub"></p>
+      <div class="sortbar"><span class="lab" id="lab-sort">Sort by</span><div class="chips" id="sort" role="group" aria-labelledby="lab-sort"></div></div>
       <div class="list" id="list"></div>
     </section>
   </div>
@@ -226,7 +222,7 @@
 
   <section class="about">
     <h2>About</h2>
-    <p>Indoor times are the free open play hours each City of Austin recreation center posted on its gym schedule, collected November 11, 2026. Outdoor courts are first come, first served during city park hours, 5 a.m. to 10 p.m.</p>
+    <p>Indoor times are the free open play hours each City of Austin recreation center posted on its gym schedule, collected November 11, 2026. Outdoor courts and fields are first come, first served. Most follow city park hours, 5 a.m. to 10 p.m., and some courts post shorter hours.</p>
     <p>The city changes gym schedules without notice. Cards marked as possibly outdated are worth a phone call first.</p>
   </section>
 </div>
@@ -236,10 +232,11 @@
 <script>
 /* ---------- catalog ---------- */
 const DAYS=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-const SPORTS=[["basketball","Basketball"],["pickleball","Pickleball"],["volleyball","Volleyball"],["badminton","Badminton"],["tennis","Tennis"],["futsal","Futsal"]];
+const SPORTS=[["basketball","Basketball"],["pickleball","Pickleball"],["volleyball","Volleyball"],["badminton","Badminton"],["tennis","Tennis"],["soccer","Soccer"]];
 // d(days, startHour, endHour, label): decimal hours, 0 = Sunday
 const d=(days,s,e,label)=>[].concat(days).map(x=>[x,Math.round(s*60),Math.round(e*60),label||""]);
-const WK=[1,2,3,4,5];
+const WK=[1,2,3,4,5],ALL=[0,1,2,3,4,5,6];
+const PBU="https://www.austintexas.gov/parks/pickleball",VBU="https://www.austintexas.gov/parks/sand-volleyball-courts",SOC="https://www.austintexas.gov/soccer";
 const ARC_OPEN=[...d(1,14.25,15,"Open gym, shared court"),...d(2,9,11.75,"Open gym, shared court"),...d(2,13.75,16,"Open gym, shared court"),...d(4,9,10.25,"Open gym, shared court"),...d(6,12.75,15.25,"Open gym, shared court")];
 const VENUES=[
  {id:"montopolis",kind:"indoor",name:"Montopolis Rec Center",addr:"1200 Montopolis Dr, Austin, TX 78741",phone:"512-978-2300",lat:30.2330,lon:-97.6990,
@@ -260,7 +257,7 @@ const VENUES=[
   url:"https://www.austintexas.gov/parks/locations/dittmar-recreation-center",
   stale:"Only the October calendar is posted. These times repeat its weekly pattern.",
   sessions:{basketball:[...d(0,14,16),...d([1,3,5],12,15,"Adults"),...d(4,18,21)],pickleball:[...d([2,4],12,15),...d(6,10,14)],
-            badminton:[...d(0,10,14),...d(2,18,21)],volleyball:d(3,18,21),futsal:d(5,18,21,"Listed as Futsal. Ask if it is drop-in.")}},
+            badminton:[...d(0,10,14),...d(2,18,21)],volleyball:d(3,18,21),soccer:d(5,18,21,"Indoor futsal. Ask if it is drop-in.")}},
  {id:"zaragoza",kind:"indoor",name:"Parque Zaragoza Rec Center",addr:"2608 Gonzales St, Austin, TX 78702",phone:"512-978-2460",lat:30.2617,lon:-97.7108,
   url:"https://www.austintexas.gov/parks/parque-zaragoza-recreation-center",
   note:"Short midday windows, listed on the center's page.",
@@ -283,16 +280,63 @@ const VENUES=[
   note:"Covered basketball court and a tennis court beside Mendez Rec Center.",sports:["basketball","tennis"]},
  {id:"sarcout",kind:"outdoor",name:"South Austin Rec Center outdoor courts",addr:"1100 Cumberland Rd, Austin, TX 78704",lat:30.2400,lon:-97.7675,
   url:"https://www.austintexas.gov/parks/south-austin-recreation-center",
-  note:"One outdoor basketball court and two lit tennis courts.",sports:["basketball","tennis"]},
+  note:"One outdoor basketball court, two lit tennis courts, two lit pickleball courts and a soccer field.",sports:["basketball","tennis","pickleball","soccer"],hrs:{pickleball:d(ALL,8,22)}},
  {id:"givens",kind:"outdoor",name:"Givens District Park",addr:"3811 E 12th St, Austin, TX 78721",lat:30.2780,lon:-97.6945,
   url:"https://austinparks.org/blog/basketball-courts-austin-texas/",
-  note:"Two basketball courts. The rec center building is closed, the park courts are separate.",sports:["basketball"]},
+  note:"Two basketball courts, a shared court for tennis or four pickleball courts, and a soccer mini pitch. The rec center building is closed, the park courts are separate.",sports:["basketball","pickleball","tennis","soccer"]},
  {id:"searight",kind:"outdoor",name:"Mary Moore Searight Park",addr:"907 W Slaughter Ln, Austin, TX 78748",lat:30.1605,lon:-97.7990,
   url:"https://austinparks.org/blog/basketball-courts-austin-texas/",
-  note:"One basketball court and two tennis courts.",sports:["basketball","tennis"]},
+  note:"Basketball court, tennis courts with lines for four pickleball courts, and two sand volleyball courts. Bring your own volleyball net.",sports:["basketball","tennis","pickleball","volleyball"],hrs:{pickleball:d(ALL,7,22)}},
  {id:"nichols",kind:"outdoor",name:"Dick Nichols District Park",addr:"8011 Beckett Rd, Austin, TX 78749",lat:30.2075,lon:-97.8600,
-  url:"https://www.austintexas.gov/parks",
-  note:"Basketball and tennis courts in Southwest Austin.",sports:["basketball","tennis"]},
+  url:PBU,
+  note:"Basketball court, two lit shared courts for tennis or five pickleball courts, and two lit sand volleyball courts.",sports:["basketball","tennis","pickleball","volleyball"],hrs:{pickleball:d(ALL,7,22)}},
+ {id:"austinhigh",kind:"outdoor",name:"Austin High Tennis Center",addr:"2001 W Cesar Chavez St, Austin, TX 78703",lat:30.2728,lon:-97.7672,url:PBU,
+  note:"Tennis courts and three dedicated pickleball courts, lit. Shared with Austin High, so public play is evenings and weekends during the school year and pauses for school events.",
+  sports:["tennis","pickleball"],hrs:{tennis:[...d(WK,17.5,22),...d([0,6],7,22)],pickleball:[...d(WK,17.5,22),...d([0,6],7,22)]}},
+ {id:"panampark",kind:"outdoor",name:"Pan American Neighborhood Park",addr:"307 Chicon St, Austin, TX 78702",lat:30.2588,lon:-97.7228,url:PBU,
+  note:"Three dedicated pickleball courts plus one more on a shared court, lit. Roller derby practice takes the courts Tuesday and Thursday nights and weekend mornings after 9.",
+  sports:["pickleball"],hrs:{pickleball:[...d([1,3,5],7,22),...d([2,4],7,19),...d([0,6],7,9)]}},
+ {id:"rosewood",kind:"outdoor",name:"Rosewood Neighborhood Park",addr:"2300 Rosewood Ave, Austin, TX 78702",lat:30.2712,lon:-97.7135,url:PBU,
+  note:"Two dedicated pickleball courts and a shared tennis court striped for two more, lit. Bring your own net.",sports:["pickleball","tennis"],hrs:{pickleball:d(ALL,7,22)}},
+ {id:"littlezilker",kind:"outdoor",name:"Little Zilker Neighborhood Park",addr:"2016 Bluebonnet Ln, Austin, TX 78704",lat:30.2548,lon:-97.7742,url:PBU,
+  note:"Lit shared court for tennis or four pickleball courts.",sports:["pickleball","tennis"],hrs:{pickleball:d(ALL,7,22)}},
+ {id:"littlestacy",kind:"outdoor",name:"Little Stacy Neighborhood Park",addr:"1500 Alameda Dr, Austin, TX 78704",lat:30.2478,lon:-97.7418,url:"https://mytennislessons.com/blog/?p=2925",
+  note:"Two lit tennis courts.",sports:["tennis"]},
+ {id:"patterson",kind:"outdoor",name:"Patterson Neighborhood Park",addr:"4200 Brookview Rd, Austin, TX 78722",lat:30.2990,lon:-97.7155,url:PBU,
+  note:"Lit shared court for tennis or two pickleball courts, plus one sand volleyball court with a net.",sports:["pickleball","tennis","volleyball"],hrs:{pickleball:d(ALL,7,22)}},
+ {id:"shipe",kind:"outdoor",name:"Shipe Neighborhood Park",addr:"4400 Avenue G, Austin, TX 78751",lat:30.3068,lon:-97.7272,url:PBU,
+  note:"Lit shared court for tennis or two pickleball courts.",sports:["pickleball","tennis"],hrs:{pickleball:d(ALL,7,22)}},
+ {id:"donbaylor",kind:"outdoor",name:"Don Baylor Neighborhood Park",addr:"2008 Enfield Rd, Austin, TX 78703",lat:30.2878,lon:-97.7728,url:PBU,
+  note:"Shared court for tennis or two pickleball courts.",sports:["pickleball","tennis"],hrs:{pickleball:d(ALL,7,22)}},
+ {id:"clarksville",kind:"outdoor",name:"Mary Frances Baylor Clarksville Park",addr:"1811 W 11th St, Austin, TX 78703",lat:30.2803,lon:-97.7628,url:PBU,
+  note:"One dedicated pickleball court.",sports:["pickleball"],hrs:{pickleball:d(ALL,7,22)}},
+ {id:"hancock",kind:"outdoor",name:"Hancock Rec Center outdoor court",addr:"811 E 41st St, Austin, TX 78751",lat:30.2995,lon:-97.7240,url:PBU,
+  note:"Shared court for tennis or two pickleball courts, and a soccer field. Pickleball hours shown are for the school year.",
+  sports:["pickleball","tennis","soccer"],hrs:{pickleball:[...d(WK,7,14.5),...d(WK,18.5,20.5),...d([0,6],7,20.5)]}},
+ {id:"nwdistrict",kind:"outdoor",name:"Beverly S. Sheffield Northwest Park",addr:"7000 Ardath St, Austin, TX 78757",lat:30.3460,lon:-97.7430,url:PBU,
+  note:"Two lit shared courts for tennis or four pickleball courts.",sports:["pickleball","tennis"],hrs:{pickleball:d(ALL,7,22)}},
+ {id:"brentwood",kind:"outdoor",name:"Brentwood Neighborhood Park",addr:"6710 Arroyo Seco, Austin, TX 78757",lat:30.3390,lon:-97.7330,url:PBU,
+  note:"Lit shared court for tennis or two pickleball courts (bring a net), plus one lit sand volleyball court.",sports:["pickleball","tennis","volleyball"],hrs:{pickleball:d(ALL,7,22)}},
+ {id:"gusgarciapark",kind:"outdoor",name:"Gus Garcia District Park",addr:"1201 E Rundberg Ln, Austin, TX 78753",lat:30.3558,lon:-97.6895,url:PBU,
+  note:"Shared court for tennis or two pickleball courts, and two soccer fields. Leagues may have the fields booked.",sports:["pickleball","tennis","soccer"],hrs:{pickleball:d(ALL,7,22)}},
+ {id:"nwrec",kind:"indoor",name:"Northwest Rec Center",addr:"2913 Northland Dr, Austin, TX 78731",phone:"512-974-6972",lat:30.3338,lon:-97.7570,url:PBU,
+  note:"Indoor court striped for three pickleball courts. Times come from the city's pickleball page.",sessions:{pickleball:d([1,3],10.5,13.5)}},
+ {id:"nwrecout",kind:"outdoor",name:"Northwest Rec Center grounds",addr:"2913 Northland Dr, Austin, TX 78731",lat:30.3334,lon:-97.7576,url:VBU,
+  note:"One sand volleyball court (bring a net) and a soccer field.",sports:["volleyball","soccer"]},
+ {id:"zilker",kind:"outdoor",name:"Zilker Park Great Lawn sand courts",addr:"2100 Barton Springs Rd, Austin, TX 78746",lat:30.2672,lon:-97.7705,url:VBU,
+  note:"Five sand volleyball courts. Bring your own net. Groups can reserve these, so a court may be taken.",sports:["volleyball"]},
+ {id:"pease",kind:"outdoor",name:"Pease District Park",addr:"1100 Kingsbury St, Austin, TX 78703",lat:30.2815,lon:-97.7520,url:VBU,
+  note:"Three sand volleyball courts with nets.",sports:["volleyball"]},
+ {id:"gillis",kind:"outdoor",name:"Gillis Neighborhood Park",addr:"2410 Durwood Ave, Austin, TX 78704",lat:30.2440,lon:-97.7625,url:VBU,
+  note:"One sand volleyball court with a net.",sports:["volleyball"]},
+ {id:"zaragozapark",kind:"outdoor",name:"Parque Zaragoza Park sand court",addr:"2611 Webberville Rd, Austin, TX 78702",lat:30.2622,lon:-97.7102,url:VBU,
+  note:"One sand volleyball court with a net.",sports:["volleyball"]},
+ {id:"bailey",kind:"outdoor",name:"Bailey Neighborhood Park",addr:"1101 W 33rd St, Austin, TX 78705",lat:30.3028,lon:-97.7485,url:VBU,
+  note:"One lit sand volleyball court with a net.",sports:["volleyball"]},
+ {id:"dovepark",kind:"outdoor",name:"Dove Springs District Park",addr:"5801 Ainez Dr, Austin, TX 78744",lat:30.1878,lon:-97.7352,url:SOC,
+  note:"Soccer mini pitch, two soccer fields and one sand volleyball court with a net. Leagues may have the full fields booked.",sports:["soccer","volleyball"]},
+ {id:"civitan",kind:"outdoor",name:"Civitan Neighborhood Park",addr:"513 Vargas Rd, Austin, TX 78741",lat:30.2342,lon:-97.6928,url:SOC,
+  note:"Soccer mini pitch.",sports:["soccer"]},
 ];
 const VBY=Object.fromEntries(VENUES.map(v=>[v.id,v]));
 const PLACES=[["Downtown",30.2672,-97.7431],["East Riverside",30.2380,-97.7220],["South Congress",30.2470,-97.7505],["South Lamar",30.2440,-97.7810],
@@ -303,11 +347,10 @@ const REASONS={maintenance:"Maintenance",event:"Private event or rental",league:
 const PARK=[300,1320];
 
 /* ---------- state ---------- */
-let state={sport:"basketball",env:"both",radius:5,from:0,openOnly:false,when:"now",day:6,time:1080,view:"map"};
-// The street map and device location need a normal web host. Inside a Claude artifact both are blocked, so the radar stays.
+let state={sport:"basketball",env:"both",radius:5,from:0,openOnly:false,when:"now",day:6,time:1080,sort:"open"};
+// The street map and device location need a normal web host. Inside a Claude artifact both are blocked, so the map column is hidden there.
 const IN_ARTIFACT=!!(window.claude&&window.claude.use), MAP_OK=!!window.L&&!IN_ARTIFACT;
 let map=null,pins=null,ring=null,startMk=null,viewKey="",lastRows=[],drawing=false;
-const view=()=>MAP_OK&&state.view!=="radar"?"map":"radar";
 function origin(){if(state.from<0&&state.custom)return state.custom;const p=PLACES[state.from]||PLACES[0];return{lat:p[1],lon:p[2],label:p[0],phrase:p[0]}}
 // Known city notice, used until the live store answers (and on hosts without one).
 let closures={panam:{reason:"maintenance",note:"City notice: gym and weight room closed, open play and leagues suspended.",at:1791565200000,until:null}}, prev=null, dirty=false, lastSig="";
@@ -338,7 +381,7 @@ function compass(dx,dy){const a=(Math.atan2(dx,dy)*180/Math.PI+360)%360;return["
 
 /* ---------- status ---------- */
 function offers(v,sport){return v.kind==="outdoor"?v.sports.includes(sport):!!(v.sessions[sport]&&v.sessions[sport].length)}
-function winsOn(v,sport,day){return v.kind==="outdoor"?[[PARK[0],PARK[1],"Park hours"]]:(v.sessions[sport]||[]).filter(x=>x[0]===day).map(x=>[x[1],x[2],x[3]]).sort((a,b)=>a[0]-b[0])}
+function winsOn(v,sport,day){return v.kind==="outdoor"&&!(v.hrs&&v.hrs[sport])?[[PARK[0],PARK[1],"Park hours"]]:((v.kind==="outdoor"?v.hrs[sport]:v.sessions[sport])||[]).filter(x=>x[0]===day).map(x=>[x[1],x[2],x[3]]).sort((a,b)=>a[0]-b[0])}
 function status(v,sport,T){
   const wins=winsOn(v,sport,T.day),c=closures[v.id];
   if(c&&c.at<=T.ms+6e4&&(c.until==null||c.until>T.ms))return{state:"reported",c,wins};
@@ -355,22 +398,25 @@ function pillText(st,T){
   return st.nextDay==null?"Nothing posted":"Next: "+(st.tomorrow?"tomorrow":DAYS[st.nextDay])+" "+fmt(st.at)}
 const RANK={open:0,soon:1,later:2,closed:3,reported:4};
 
+const SORT_LABELS=[["open","Open first"],["near","Nearest"],["late","Closes latest"],["name","A to Z"]];
+const lateKey=r=>r.st.state==="open"||r.st.state==="soon"?10000+r.st.until:r.st.state==="later"?5000-r.st.at:r.st.state==="closed"?1000:0;
+const SORTS={open:(a,b)=>RANK[a.st.state]-RANK[b.st.state]||a.o.dist-b.o.dist,near:(a,b)=>a.o.dist-b.o.dist,
+  late:(a,b)=>lateKey(b)-lateKey(a)||a.o.dist-b.o.dist,name:(a,b)=>a.v.name.localeCompare(b.v.name)};
 function compute(){const T=target();
   const all=VENUES.filter(v=>offers(v,state.sport)&&(state.env==="both"||v.kind===state.env)).map(v=>({v,o:offset(v),st:status(v,state.sport,T)}));
   let rows=all.filter(r=>r.o.dist<=state.radius);
   if(state.openOnly)rows=rows.filter(r=>r.st.state==="open"||r.st.state==="soon");
-  rows.sort((a,b)=>RANK[a.st.state]-RANK[b.st.state]||a.o.dist-b.o.dist);
+  rows.sort(SORTS[state.sort]||SORTS.open);
   return{T,rows,all}}
 
 /* ---------- render ---------- */
 function render(soft){
   if(soft&&ui.report&&$("list").contains(document.activeElement)){dirty=true;return}
   dirty=false;const{T,rows,all}=compute();
-  const sportName=SPORTS.find(x=>x[0]===state.sport)[1].toLowerCase(),place=origin().phrase;
+  const sportName=SPORTS.find(x=>x[0]===state.sport)[1].toLowerCase();
   const nOpen=rows.filter(r=>r.st.state==="open"||r.st.state==="soon").length;
   const head=$("headline");head.textContent="";
   head.append(h("b",null,String(nOpen)),` ${nOpen===1?"spot":"spots"} open for ${sportName} `,T.live?"right now":`${DAYS[T.day]} at ${fmt(T.mins)}`);
-  $("sub").textContent=`${rows.length} ${rows.length===1?"match":"matches"} within ${state.radius} mi of ${place}`+(state.env==="both"?"":`, ${state.env} only`)+". Open ones are listed first, then by distance.";
   const list=$("list");list.textContent="";
   if(!rows.length){
     const pool=all.filter(r=>!state.openOnly||r.st.state==="open"||r.st.state==="soon").sort((a,b)=>a.o.dist-b.o.dist)[0];
@@ -381,7 +427,7 @@ function render(soft){
     else if(state.env!=="both")box.append(h("button",{class:"btn solid",type:"button",onclick:()=>set({env:"both"})},"Search indoor and outdoor"));
     list.append(box)}
   rows.forEach((r,i)=>list.append(card(r,i+1,T)));
-  drawRadar(rows);drawMap(rows);renderBoard(T);
+  drawMap(rows);renderBoard(T);
   lastSig=sig(rows,T);
   if(T.live){const now={};rows.forEach(r=>now[r.v.id]=r.st.state);
     if(prev)for(const id in now){const a=prev[id],b=now[id];if(!a)continue;
@@ -400,7 +446,7 @@ function card({v,o,st},n,T){
   if(st.wins.length)st.wins.forEach(w=>wins.append(h("span",{class:"win"+(st.cur===w?" cur":"")},`${fmt(w[0])} to ${fmt(w[1])}`+(w[2]&&v.kind==="indoor"?` · ${w[2]}`:""))));
   else wins.append(h("span",{class:"meta"},"no open play posted"));
   el.append(wins);
-  if(v.kind==="outdoor")el.append(h("p",{class:"note"},"First come, first served during city park hours. ",v.note));
+  if(v.kind==="outdoor")el.append(h("p",{class:"note"},"First come, first served. ",v.note));
   else if(v.note)el.append(h("p",{class:"note"},v.note));
   if(v.stale)el.append(h("p",{class:"note flag"},"Possibly outdated. ",v.stale));
   const acts=h("div",{class:"acts"});
@@ -432,26 +478,9 @@ function reportForm(v){const id=v.id;
     ui.msg?h("p",{class:"note flag",style:"flex-basis:100%;margin:0"},ui.msg):null);
   f.addEventListener("submit",e=>{e.preventDefault();report(id)});return f}
 
-function drawRadar(rows){const svg=$("radar");svg.textContent="";const R=state.radius,k=100/R;
-  svg.append(s("rect",{x:-120,y:-120,width:240,height:240,fill:"var(--apron)"}),s("circle",{r:100,fill:"var(--court)",stroke:"var(--apronink)","stroke-width":2.4}),s("circle",{r:100,fill:"none",stroke:"#ee6730","stroke-width":1,"stroke-dasharray":"1 0",transform:"scale(1.045)"}));
-  const step=R<=3?1:R<=8?2:5;
-  for(let m=step;m<R;m+=step)svg.append(s("circle",{r:m*k,fill:"none",stroke:"var(--courtline)","stroke-width":.7,"stroke-opacity":.45}),
-    s("text",{x:m*k+2,y:-2.5,fill:"var(--courtline)","fill-opacity":.75,"font-size":6.5,"font-family":"var(--body)"},m+" mi"));
-  svg.append(s("line",{x1:-100,y1:0,x2:100,y2:0,stroke:"var(--courtline)","stroke-width":.7,"stroke-opacity":.45}),s("line",{x1:0,y1:-100,x2:0,y2:100,stroke:"var(--courtline)","stroke-width":.7,"stroke-opacity":.45}),
-    s("text",{x:0,y:-107,fill:"var(--apronink)","font-size":10,"font-weight":800,"font-style":"italic","font-family":"var(--display)","text-anchor":"middle"},"N"),
-    s("text",{x:-112,y:113,fill:"var(--apronink)","font-size":7,"font-family":"var(--body)"},`Edge of circle is ${R} mi`),
-    s("circle",{r:3.2,fill:"var(--courtline)"}),s("circle",{r:6.5,fill:"none",stroke:"var(--courtline)","stroke-width":1}));
-  const placed=[];rows.forEach(r=>{let x=r.o.dx*k,y=-r.o.dy*k,n=0;while(placed.some(q=>Math.hypot(q[0]-x,q[1]-y)<15)&&n++<8){x+=10;y+=n%2?6:-6}placed.push([x,y]);r.px=x;r.py=y});
-  rows.slice().reverse().forEach(r=>{const n=rows.indexOf(r)+1,x=r.px,y=r.py,stt=r.st.state,on=stt==="open"||stt==="soon";
-    const fill=stt==="reported"?"#17130f":on?"#ee6730":stt==="later"?"#ffffff":"#8b8d91";
-    const ink=stt==="reported"||stt==="closed"?"#ffffff":"#17130f",edge=stt==="reported"?"#e0281b":"#17130f",ew=stt==="reported"?2.2:1.4;
-    const shape=r.v.kind==="indoor"?s("circle",{r:7.5,fill,stroke:edge,"stroke-width":ew}):s("rect",{x:-6.6,y:-6.6,width:13.2,height:13.2,transform:"rotate(45)",fill,stroke:edge,"stroke-width":ew});
-    const g=s("g",{class:"dot",transform:`translate(${x.toFixed(1)} ${y.toFixed(1)})`,tabindex:0,role:"button","aria-label":`${n}. ${r.v.name}, ${pillText(r.st,target())}`,
-      onclick:()=>jump(r.v.id),onkeydown:e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();jump(r.v.id)}}},
-      on?s("circle",{class:"pulse",r:7.5,fill:"none",stroke:"#17130f","stroke-width":1.5}):null,shape,s("text",{fill:ink},String(n)));
-    svg.append(g)})}
 /* ---------- street map (Leaflet + OpenStreetMap) ---------- */
-function initMap(){if(!MAP_OK)return;$("map").hidden=false;const o=origin();
+function initMap(){if(!MAP_OK){document.querySelector(".main").classList.add("nomap");return}
+  $("mapcol").hidden=false;const o=origin();
   map=L.map("map",{scrollWheelZoom:false}).setView([o.lat,o.lon],12);
   L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}).addTo(map);
   ring=L.circle([o.lat,o.lon],{radius:state.radius*1609.34,color:"#d9531e",weight:3,dashArray:"8 7",fillColor:"#ee6730",fillOpacity:.08,interactive:false}).addTo(map);
@@ -459,8 +488,11 @@ function initMap(){if(!MAP_OK)return;$("map").hidden=false;const o=origin();
   startMk=L.marker([o.lat,o.lon],{draggable:true,zIndexOffset:1000,title:"Drag to move your starting point",
     icon:L.divIcon({className:"",html:'<div class="pin start"></div>',iconSize:[22,22],iconAnchor:[11,11]})}).addTo(map);
   startMk.on("dragend",()=>{const ll=startMk.getLatLng();setCustom(ll.lat,ll.lng,"Dropped pin","your pin")});
+  const Compass=L.Control.extend({options:{position:"topright"},onAdd(){const c=L.DomUtil.create("div","compass");c.title="North is up";
+    c.innerHTML='<svg viewBox="0 0 44 58" role="img" aria-label="Compass, north is up"><text x="22" y="14" text-anchor="middle" font-size="17" font-weight="800" font-style="italic" font-family="Kanit,Arial Black,sans-serif" fill="#17130f">N</text><circle cx="22" cy="36" r="18" fill="#fff" stroke="#17130f" stroke-width="2.5"/><path d="M22 20l6 16H16z" fill="#ee6730" stroke="#17130f" stroke-width="1.5" stroke-linejoin="round"/><path d="M22 52l6-16H16z" fill="#17130f" stroke="#17130f" stroke-width="1.5" stroke-linejoin="round"/><circle cx="22" cy="36" r="2.200" fill="#fff"/></svg>';return c}});
+  map.addControl(new Compass());
   map.on("zoomend",()=>drawMap(lastRows))}
-function drawMap(rows){lastRows=rows;if(!map||drawing||view()!=="map")return;drawing=true;const o=origin();
+function drawMap(rows){lastRows=rows;if(!map||drawing)return;drawing=true;const o=origin();
   ring.setLatLng([o.lat,o.lon]);ring.setRadius(state.radius*1609.34);startMk.setLatLng([o.lat,o.lon]);
   const key=[o.lat,o.lon,state.radius].join();
   if(key!==viewKey){viewKey=key;map.fitBounds(ring.getBounds(),{padding:[6,6],animate:false})}
@@ -532,8 +564,7 @@ function syncControls(){
   document.querySelectorAll("#env button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.v===state.env)));
   let own=$("from").querySelector('option[value="-1"]');
   if(state.custom){if(!own){own=h("option",{value:-1});$("from").prepend(own)}own.textContent=state.custom.label}else if(own)own.remove();
-  const vw=view();$("view").hidden=!MAP_OK;$("map").hidden=$("mapHint").hidden=vw!=="map";$("radar").style.display=vw==="map"?"none":"";
-  document.querySelectorAll("#view button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.v===vw)));
+  document.querySelectorAll("#sort .chip").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.v===state.sort)));
   $("radius").value=state.radius;$("radiusOut").textContent=state.radius+" mi";$("from").value=state.from;$("openOnly").checked=state.openOnly;
   $("when").value=state.when;$("whenDay").hidden=$("whenTime").hidden=state.when==="now";$("whenDay").value=state.day;
   $("whenTime").value=String(Math.floor(state.time/60)).padStart(2,"0")+":"+String(state.time%60).padStart(2,"0")}
@@ -542,7 +573,9 @@ function start(saved){
     if(old){old.from=old.from===0?1:old.from===1?0:old.from;Object.assign(state,old);localStorage.removeItem("gotnext-v1");save()}
     Object.assign(state,JSON.parse(localStorage.getItem("gotnext-v2")||"{}"))}catch(e){}
   if(saved&&saved.sport)Object.assign(state,saved);
+  if(state.sport==="futsal")state.sport="soccer";
   if(!SPORTS.some(x=>x[0]===state.sport))state.sport="basketball";
+  if(!SORTS[state.sort])state.sort="open";
   if(!(state.from<0&&state.custom)&&!PLACES[state.from])state.from=0;state.radius=Math.min(15,Math.max(1,+state.radius||5));
   SPORTS.forEach(([v,t])=>$("sports").append(h("button",{class:"chip",type:"button","data-v":v,onclick:()=>set({sport:v})},t)));
   PLACES.forEach((p,i)=>$("from").append(h("option",{value:i},p[0])));
@@ -554,7 +587,7 @@ function start(saved){
   $("when").onchange=e=>set({when:e.target.value});
   $("whenDay").onchange=e=>set({day:+e.target.value});
   $("whenTime").onchange=e=>{const[a,b]=(e.target.value||"18:00").split(":").map(Number);set({time:a*60+b})};
-  document.querySelectorAll("#view button").forEach(b=>b.onclick=()=>{state.view=b.dataset.v;save();syncControls();if(map&&view()==="map"){map.invalidateSize();viewKey="";drawMap(lastRows)}});
+  SORT_LABELS.forEach(([v,l])=>$("sort").append(h("button",{class:"chip sm",type:"button","data-v":v,onclick:()=>set({sort:v})},l)));
   if(!IN_ARTIFACT&&"geolocation" in navigator){$("locate").hidden=false;$("locate").onclick=locate}
   syncControls();initMap();render();tick();setInterval(tick,15000);connect();
   document.addEventListener("focusout",()=>setTimeout(()=>{if(dirty)render(true)},50))}
