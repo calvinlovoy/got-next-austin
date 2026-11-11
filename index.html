@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Got Next Austin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* Layout idea: a painted-court radar on the left that plots every match by true bearing and distance, a live status list on the right. */
+  :root{
+    --bg:#eaefe9; --surface:#ffffff; --ink:#13201a; --muted:#56675e; --line:#d3dbd4; --accent:#1d5ea8;
+    --ok:#177a43; --warn:#a86200; --bad:#bd3327;
+    --court:#2a62a3; --apron:#2c7654; --courtline:#f3f7f1; --ball:#d9f23c;
+    --display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+    --body:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0e1613; --surface:#16211c; --ink:#e7efe9; --muted:#93a59b; --line:#2a3a32; --accent:#86b6f0;
+      --ok:#55c987; --warn:#f0ac42; --bad:#f2736a; color-scheme:dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0e1613; --surface:#16211c; --ink:#e7efe9; --muted:#93a59b; --line:#2a3a32; --accent:#86b6f0;
+    --ok:#55c987; --warn:#f0ac42; --bad:#f2736a; color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--body)}
+  button,select,input{font:inherit;color:inherit}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .wrap{max-width:1180px;margin:0 auto;padding:22px 18px 56px;display:flex;flex-direction:column;gap:18px}
+
+  header{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap}
+  .mark{font:800 54px/.85 var(--display);letter-spacing:.5px;text-transform:uppercase;margin:0}
+  .mark span{color:var(--accent)}
+  .tag{margin:6px 0 0;color:var(--muted);max-width:52ch}
+  .clock{display:flex;align-items:center;gap:8px;font-weight:600;font-variant-numeric:tabular-nums;padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--surface)}
+  .beat{width:9px;height:9px;border-radius:50%;background:var(--ok)}
+  .beat.off{background:var(--muted)}
+
+  .controls{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:grid;grid-template-columns:1fr;gap:14px}
+  .row{display:flex;flex-wrap:wrap;gap:14px 22px;align-items:flex-end}
+  .field{display:flex;flex-direction:column;gap:6px;min-width:0}
+  .lab{font:700 13px/1 var(--display);letter-spacing:1.2px;text-transform:uppercase;color:var(--muted)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{border:1.5px solid var(--line);background:transparent;border-radius:999px;padding:7px 14px;font-weight:600;cursor:pointer}
+  .chip:hover{border-color:var(--ink)}
+  .chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+  .seg{display:inline-flex;border:1.5px solid var(--ink);border-radius:9px;overflow:hidden}
+  .seg button{border:0;background:transparent;padding:7px 14px;font-weight:600;cursor:pointer}
+  .seg button+button{border-left:1.5px solid var(--ink)}
+  .seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+  select,input[type=time],input[type=text]{background:var(--surface);border:1.5px solid var(--line);border-radius:9px;padding:7px 10px;min-height:38px}
+  .radius{display:flex;align-items:center;gap:10px}
+  .radius input{width:170px;accent-color:var(--accent)}
+  .radius output{font:800 24px/1 var(--display);min-width:62px;font-variant-numeric:tabular-nums}
+  .switch{display:flex;align-items:center;gap:8px;font-weight:600;cursor:pointer;min-height:38px}
+  .switch input{width:18px;height:18px;accent-color:var(--accent)}
+  .hint{color:var(--muted);font-size:13px;margin:0}
+
+  .main{display:grid;grid-template-columns:minmax(300px,420px) 1fr;gap:20px;align-items:start}
+  .radar{position:sticky;top:14px;display:flex;flex-direction:column;gap:10px}
+  .radar svg{width:100%;height:auto;display:block;border-radius:16px}
+  .legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--muted)}
+  .legend i{display:inline-block;width:11px;height:11px;margin-right:5px;vertical-align:-1px}
+  .dot{cursor:pointer}
+  .dot text{font:700 8px var(--body);text-anchor:middle;dominant-baseline:central;pointer-events:none}
+  .pulse{transform-box:fill-box;transform-origin:center;animation:pulse 2.2s ease-out infinite}
+  @keyframes pulse{0%{transform:scale(1);opacity:.7}100%{transform:scale(2.3);opacity:0}}
+
+  .headline{font:800 36px/1 var(--display);text-transform:uppercase;letter-spacing:.3px;margin:0 0 4px;text-wrap:balance}
+  .headline b{color:var(--accent)}
+  .list{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+  .card{background:var(--surface);border:1px solid var(--line);border-left:6px solid var(--s,var(--line));border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:7px;scroll-margin-top:14px}
+  .card.flash{box-shadow:0 0 0 3px var(--accent)}
+  .card.open{--s:var(--ok)} .card.soon{--s:var(--warn)} .card.reported{--s:var(--bad)} .card.later{--s:var(--accent)}
+  .top{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+  .name{display:flex;gap:9px;align-items:baseline;min-width:0}
+  .num{font:800 20px/1 var(--display);color:var(--muted);font-variant-numeric:tabular-nums}
+  .name h3{margin:0;font-size:16.5px;font-weight:600;overflow-wrap:anywhere}
+  .pill{font-weight:600;font-size:13px;border-radius:999px;padding:4px 11px;border:1.5px solid currentColor;white-space:nowrap}
+  .pill.open{color:var(--ok)} .pill.soon{color:var(--warn)} .pill.reported{color:var(--bad)} .pill.later{color:var(--accent)} .pill.closed{color:var(--muted)}
+  .meta{color:var(--muted);font-size:13.5px}
+  .wins{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13.5px}
+  .win{border:1px solid var(--line);border-radius:6px;padding:2px 8px;font-variant-numeric:tabular-nums}
+  .win.cur{border-color:var(--ok);color:var(--ok);font-weight:600}
+  .note{font-size:13.5px;margin:0}
+  .flag{color:var(--warn);font-weight:600}
+  .alert{border:1px solid var(--bad);border-radius:8px;padding:8px 10px;font-size:13.5px}
+  .acts{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;font-size:13.5px}
+  .acts a{color:var(--accent);font-weight:600}
+  .btn{border:1.5px solid var(--ink);background:transparent;border-radius:8px;padding:5px 11px;font-weight:600;cursor:pointer}
+  .btn.solid{background:var(--ink);color:var(--bg)}
+  .btn:disabled{opacity:.5;cursor:default}
+  .form{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;border-top:1px dashed var(--line);padding-top:10px}
+  .form .field{flex:1 1 150px}
+  .form .grow{flex:2 1 220px}
+  details summary{cursor:pointer;color:var(--muted);font-size:13.5px;font-weight:600}
+  .week{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;font-size:13.5px;margin-top:6px;font-variant-numeric:tabular-nums}
+  .week dt{font-weight:600} .week dd{margin:0;color:var(--muted)}
+  .empty{background:var(--surface);border:1px dashed var(--line);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+
+  .board{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+  h2{font:800 24px/1 var(--display);text-transform:uppercase;letter-spacing:.6px;margin:0 0 8px}
+  .board ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+  .board li{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;font-size:14px}
+  .tick{font-weight:700;font-size:12px;letter-spacing:.8px;text-transform:uppercase}
+  .tick.bad{color:var(--bad)} .tick.warn{color:var(--warn)}
+  .about{color:var(--muted);font-size:13.5px;max-width:78ch}
+  .about p{margin:0 0 6px}
+
+  .toasts{position:fixed;right:14px;bottom:14px;display:flex;flex-direction:column;gap:8px;z-index:20;max-width:min(380px,calc(100% - 28px))}
+  .toast{background:var(--ink);color:var(--bg);border-radius:10px;padding:10px 12px;display:flex;gap:10px;align-items:flex-start;box-shadow:0 6px 24px rgba(0,0,0,.25);border-left:5px solid var(--t,var(--accent));font-size:14px}
+  .toast button{border:0;background:transparent;color:inherit;font-weight:700;cursor:pointer;padding:0 2px}
+
+  @media (max-width:860px){
+    .main{grid-template-columns:1fr}
+    .radar{position:static;max-width:440px;width:100%;margin:0 auto}
+    .mark{font-size:44px} .headline{font-size:30px}
+  }
+  @media (prefers-reduced-motion: reduce){.pulse{animation:none;opacity:0}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <p class="mark">Got <span>Next</span></p>
+      <p class="tag">Pick a sport and a distance. See which Austin courts are open to walk onto, and watch them flip the minute they close.</p>
+    </div>
+    <div class="clock" title="All times are Austin time"><span class="beat" id="beat"></span><span id="clock">Austin time</span></div>
+  </header>
+
+  <section class="controls" aria-label="Search">
+    <div class="row">
+      <div class="field"><span class="lab" id="lab-sport">Sport</span><div class="chips" id="sports" role="group" aria-labelledby="lab-sport"></div></div>
+    </div>
+    <div class="row">
+      <div class="field"><span class="lab" id="lab-env">Setting</span>
+        <div class="seg" id="env" role="group" aria-labelledby="lab-env">
+          <button type="button" data-v="indoor">Indoor</button><button type="button" data-v="outdoor">Outdoor</button><button type="button" data-v="both">Both</button>
+        </div>
+      </div>
+      <div class="field"><label class="lab" for="radius">Radius</label>
+        <div class="radius"><input type="range" id="radius" min="1" max="15" step="1"><output id="radiusOut" for="radius">5 mi</output></div>
+      </div>
+      <div class="field"><label class="lab" for="from">Starting from</label><select id="from"></select></div>
+      <div class="field"><label class="lab" for="when">When</label>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <select id="when"><option value="now">Right now (live)</option><option value="pick">Pick a day and time</option></select>
+          <select id="whenDay" aria-label="Day" hidden></select>
+          <input type="time" id="whenTime" aria-label="Time" value="18:00" hidden>
+        </div>
+      </div>
+      <label class="switch" for="openOnly"><input type="checkbox" id="openOnly"> Only show what's open</label>
+    </div>
+  </section>
+
+  <div class="main">
+    <aside class="radar" aria-label="Map of matches">
+      <svg id="radar" viewBox="-120 -120 240 240" role="img" aria-label="Matches plotted by direction and distance from your starting point"></svg>
+      <div class="legend">
+        <span><i style="background:var(--ball);border-radius:50%"></i>Open</span>
+        <span><i style="background:var(--courtline);border-radius:50%"></i>Opens later today</span>
+        <span><i style="border:2px solid var(--courtline);border-radius:50%;background:var(--court)"></i>Not today</span>
+        <span><i style="background:var(--bad);border-radius:50%"></i>Reported closed</span>
+        <span>Circle is indoor, diamond is outdoor. North is up.</span>
+      </div>
+    </aside>
+    <section aria-live="polite">
+      <h1 class="headline" id="headline">Finding courts</h1>
+      <p class="hint" id="sub"></p>
+      <div class="list" id="list"></div>
+    </section>
+  </div>
+
+  <section class="board" aria-label="Live board">
+    <h2>Live board</h2>
+    <p class="hint" id="liveState">Connecting to live reports.</p>
+    <ul id="board"></ul>
+  </section>
+
+  <section class="about">
+    <h2>About the data</h2>
+    <p>Indoor times are the free open play hours each City of Austin recreation center posted on its gym schedule, collected November 11, 2026. Outdoor courts are first come, first served during city park hours, 5 a.m. to 10 p.m.</p>
+    <p>Distances are straight lines from the middle of the neighborhood you pick. Pages like this one can't read your device location, so choose the closest neighborhood.</p>
+    <p>The city changes gym schedules without notice. Cards marked as possibly outdated are worth a phone call first.</p>
+  </section>
+</div>
+<div class="toasts" id="toasts" aria-live="assertive"></div>
+
+<script>
+/* ---------- catalog ---------- */
+const DAYS=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const SPORTS=[["basketball","Basketball"],["pickleball","Pickleball"],["volleyball","Volleyball"],["badminton","Badminton"],["tennis","Tennis"],["futsal","Futsal"]];
+// d(days, startHour, endHour, label): decimal hours, 0 = Sunday
+const d=(days,s,e,label)=>[].concat(days).map(x=>[x,Math.round(s*60),Math.round(e*60),label||""]);
+const WK=[1,2,3,4,5];
+const ARC_OPEN=[...d(1,14.25,15,"Open gym, shared court"),...d(2,9,11.75,"Open gym, shared court"),...d(2,13.75,16,"Open gym, shared court"),...d(4,9,10.25,"Open gym, shared court"),...d(6,12.75,15.25,"Open gym, shared court")];
+const VENUES=[
+ {id:"montopolis",kind:"indoor",name:"Montopolis Rec Center",addr:"1200 Montopolis Dr, Austin, TX 78741",phone:"512-978-2300",lat:30.2330,lon:-97.6990,
+  url:"https://www.austintexas.gov/parks/locations/montopolis-recreation-and-community-center",
+  note:"Gym is 18+ without a guardian.",stale:"Schedule posted Sep 16. The city expects a new one around Nov 22.",
+  sessions:{basketball:[...d(0,10,15.75),...d(WK,12,15)],pickleball:[...d(6,10,13),...d(2,18,20.75)],volleyball:d(3,18,20.75)}},
+ {id:"dovesprings",kind:"indoor",name:"Dove Springs Rec Center",addr:"5801 Ainez Dr, Austin, TX 78744",phone:"512-974-3840",lat:30.1885,lon:-97.7340,
+  url:"https://www.austintexas.gov/parks/locations/george-morales-dove-springs-recreation-center",
+  note:"Fall 2026 schedule. The most basketball hours of any center on this list.",
+  sessions:{basketball:[...d(0,12,15.5),...d(1,12,17),...d(1,18,20.5),...d(2,11,17),...d(2,18,20.5),...d(3,9,17),...d(4,9,17),...d(5,12,17),...d(5,18,20.5),...d(6,10,15.5)],
+            pickleball:[...d([1,5],9,12),...d(3,18,20.5)]}},
+ {id:"sarc",kind:"indoor",name:"South Austin Rec Center",addr:"1100 Cumberland Rd, Austin, TX 78704",phone:"512-978-2440",lat:30.2405,lon:-97.7680,
+  url:"https://www.austintexas.gov/parks/south-austin-recreation-center",
+  note:"Fall 2026 schedule. The gym splits into two courts, so open play can share the floor.",
+  sessions:{basketball:[...d(1,11,16),...d(2,14,16),...d(3,13,16),...d(4,14,16),...d(5,14,16),...d(6,9,13,"Adults"),...d(6,13,15,"Family and women")],
+            pickleball:[...d(2,18,21),...d(4,11,14)]}},
+ {id:"dittmar",kind:"indoor",name:"Dittmar Rec Center",addr:"1009 W Dittmar Rd, Austin, TX 78745",phone:"512-974-6090",lat:30.1820,lon:-97.7990,
+  url:"https://www.austintexas.gov/parks/locations/dittmar-recreation-center",
+  stale:"Only the October calendar is posted. These times repeat its weekly pattern.",
+  sessions:{basketball:[...d(0,14,16),...d([1,3,5],12,15,"Adults"),...d(4,18,21)],pickleball:[...d([2,4],12,15),...d(6,10,14)],
+            badminton:[...d(0,10,14),...d(2,18,21)],volleyball:d(3,18,21),futsal:d(5,18,21,"Listed as Futsal. Ask if it is drop-in.")}},
+ {id:"zaragoza",kind:"indoor",name:"Parque Zaragoza Rec Center",addr:"2608 Gonzales St, Austin, TX 78702",phone:"512-978-2460",lat:30.2617,lon:-97.7108,
+  url:"https://www.austintexas.gov/parks/parque-zaragoza-recreation-center",
+  note:"Short midday windows, listed on the center's page.",
+  sessions:{basketball:d([2,4],11,14),pickleball:d(3,12,14)}},
+ {id:"panam",kind:"indoor",name:"Pan Am Rec Center",addr:"2100 E 3rd St, Austin, TX 78702",phone:"512-978-2425",lat:30.2580,lon:-97.7215,
+  url:"https://austintexas.gov/department/oswaldo-ab-cantupan-american-recreation-center",
+  sessions:{basketball:d(6,12,16)}},
+ {id:"arc",kind:"indoor",name:"Austin Rec Center",addr:"1301 Shoal Creek Blvd, Austin, TX 78701",phone:"512-978-2370",lat:30.2775,lon:-97.7505,
+  url:"https://www.austintexas.gov/AustinRec",
+  note:"Open gym shares a divided court between basketball, volleyball, pickleball and badminton. City leagues take the evenings.",
+  stale:"The last posted schedule covered Oct 18 to 31.",
+  sessions:{basketball:ARC_OPEN,volleyball:ARC_OPEN,badminton:[...ARC_OPEN,...d(0,14,15.5)],pickleball:[...ARC_OPEN,...d(1,9.25,11.5),...d(3,9,10.75),...d(5,9,11.5)]}},
+ {id:"gusgarcia",kind:"indoor",name:"Gus Garcia Rec Center",addr:"1201 E Rundberg Ln, Austin, TX 78753",phone:"512-978-2525",lat:30.3565,lon:-97.6880,
+  url:"https://www.austintexas.gov/parks/locations/gustavo-gus-l-garcia-recreation-center",
+  note:"Fall 2026 schedule. Three weeknight basketball runs.",
+  sessions:{basketball:[...d(0,14.5,17),...d([1,3],12,14,"General open play"),...d([1,2,3],18,21),...d(6,12,16,"Shared with volleyball")],
+            volleyball:[...d(5,18,21),...d(6,12,16,"Shared with basketball")],pickleball:[...d(0,13,14.5),...d([2,4],11,13),...d(6,10,12)]}},
+ {id:"metz",kind:"outdoor",name:"Metz Park courts",addr:"2407 Canterbury St, Austin, TX 78702",lat:30.2530,lon:-97.7190,
+  url:"https://www.austintexas.gov/parks/locations/rodolfo-rudy-mendez-recreation-center",
+  note:"Covered basketball court and a tennis court beside Mendez Rec Center.",sports:["basketball","tennis"]},
+ {id:"sarcout",kind:"outdoor",name:"South Austin Rec Center outdoor courts",addr:"1100 Cumberland Rd, Austin, TX 78704",lat:30.2400,lon:-97.7675,
+  url:"https://www.austintexas.gov/parks/south-austin-recreation-center",
+  note:"One outdoor basketball court and two lit tennis courts.",sports:["basketball","tennis"]},
+ {id:"givens",kind:"outdoor",name:"Givens District Park",addr:"3811 E 12th St, Austin, TX 78721",lat:30.2780,lon:-97.6945,
+  url:"https://austinparks.org/blog/basketball-courts-austin-texas/",
+  note:"Two basketball courts. The rec center building is closed, the park courts are separate.",sports:["basketball"]},
+ {id:"searight",kind:"outdoor",name:"Mary Moore Searight Park",addr:"907 W Slaughter Ln, Austin, TX 78748",lat:30.1605,lon:-97.7990,
+  url:"https://austinparks.org/blog/basketball-courts-austin-texas/",
+  note:"One basketball court and two tennis courts.",sports:["basketball","tennis"]},
+ {id:"nichols",kind:"outdoor",name:"Dick Nichols District Park",addr:"8011 Beckett Rd, Austin, TX 78749",lat:30.2075,lon:-97.8600,
+  url:"https://www.austintexas.gov/parks",
+  note:"Basketball and tennis courts in Southwest Austin.",sports:["basketball","tennis"]},
+];
+const VBY=Object.fromEntries(VENUES.map(v=>[v.id,v]));
+const PLACES=[["East Riverside",30.2380,-97.7220],["Downtown",30.2672,-97.7431],["South Congress",30.2470,-97.7505],["South Lamar",30.2440,-97.7810],
+ ["Zilker",30.2640,-97.7700],["East Austin (Holly)",30.2560,-97.7240],["Montopolis",30.2320,-97.6990],["St. Elmo",30.2150,-97.7650],
+ ["Dove Springs",30.1900,-97.7400],["Far South (Slaughter Ln)",30.1700,-97.8050],["Oak Hill",30.2350,-97.8600],["UT campus",30.2850,-97.7350],
+ ["Hyde Park",30.3050,-97.7290],["Mueller",30.2985,-97.7050],["North Lamar and Rundberg",30.3600,-97.6950],["The Domain",30.4020,-97.7250]];
+const REASONS={maintenance:"Maintenance",event:"Private event or rental",league:"League or program has the space",weather:"Weather",staff:"Staffing",other:"Other"};
+const PARK=[300,1320];
+
+/* ---------- state ---------- */
+let state={sport:"basketball",env:"both",radius:5,from:0,openOnly:false,when:"now",day:6,time:1080};
+// Known city notice, used until the live store answers (and on hosts without one).
+let closures={panam:{reason:"maintenance",note:"City notice: gym and weight room closed, open play and leagues suspended.",at:1791565200000,until:null}}, prev=null, dirty=false, lastSig="";
+const ui={report:null,draft:{reason:"maintenance",dur:"today",note:""},week:new Set(),busy:false,msg:""};
+const live={db:null,uid:null,canWrite:null,status:"connecting"};
+const $=id=>document.getElementById(id);
+
+function h(tag,attrs,...kids){const e=document.createElement(tag);for(const k in attrs||{}){const v=attrs[k];if(v==null||v===false)continue;
+  if(k==="class")e.className=v;else if(k.startsWith("on"))e.addEventListener(k.slice(2),v);else if(k==="value")e.value=v;else e.setAttribute(k,v===true?"":v);}
+  kids.flat().forEach(c=>{if(c==null||c===false)return;e.append(c.nodeType?c:document.createTextNode(String(c)))});return e}
+function s(tag,attrs,...kids){const e=document.createElementNS("http://www.w3.org/2000/svg",tag);for(const k in attrs||{}){const v=attrs[k];if(v==null)continue;
+  if(k.startsWith("on"))e.addEventListener(k.slice(2),v);else e.setAttribute(k,v)}kids.flat().forEach(c=>{if(c!=null)e.append(c.nodeType?c:document.createTextNode(String(c)))});return e}
+
+/* ---------- time (always Austin) ---------- */
+const partsFmt=new Intl.DateTimeFormat("en-US",{timeZone:"America/Chicago",weekday:"short",hour:"2-digit",minute:"2-digit",hourCycle:"h23"});
+const dateFmt=new Intl.DateTimeFormat("en-US",{timeZone:"America/Chicago",month:"short",day:"numeric"});
+function austin(ms){const p={};partsFmt.formatToParts(new Date(ms)).forEach(x=>p[x.type]=x.value);return{day:DAYS.indexOf(p.weekday),mins:(+p.hour%24)*60+(+p.minute)}}
+function fmt(m){let hh=Math.floor(m/60)%24,mm=m%60;const ap=hh>=12?"p":"a";hh=hh%12||12;return hh+(mm?":"+String(mm).padStart(2,"0"):"")+ap}
+function stamp(ms){const n=Date.now();return dateFmt.format(new Date(ms))===dateFmt.format(new Date(n))?"today at "+fmt(austin(ms).mins):dateFmt.format(new Date(ms))}
+function target(){const nowMs=Date.now(),n=austin(nowMs);if(state.when==="now")return{...n,ms:nowMs,live:true};
+  const ahead=(state.day-n.day+7)%7;return{day:state.day,mins:state.time,ms:nowMs+ahead*864e5+(state.time-n.mins)*6e4,live:false}}
+
+/* ---------- geometry ---------- */
+function offset(v){const o=PLACES[state.from];const dy=(v.lat-o[1])*69.05,dx=(v.lon-o[2])*69.17*Math.cos(o[1]*Math.PI/180);return{dx,dy,dist:Math.hypot(dx,dy)}}
+function compass(dx,dy){const a=(Math.atan2(dx,dy)*180/Math.PI+360)%360;return["N","NE","E","SE","S","SW","W","NW"][Math.round(a/45)%8]}
+
+/* ---------- status ---------- */
+function offers(v,sport){return v.kind==="outdoor"?v.sports.includes(sport):!!(v.sessions[sport]&&v.sessions[sport].length)}
+function winsOn(v,sport,day){return v.kind==="outdoor"?[[PARK[0],PARK[1],"Park hours"]]:(v.sessions[sport]||[]).filter(x=>x[0]===day).map(x=>[x[1],x[2],x[3]]).sort((a,b)=>a[0]-b[0])}
+function status(v,sport,T){
+  const wins=winsOn(v,sport,T.day),c=closures[v.id];
+  if(c&&c.at<=T.ms+6e4&&(c.until==null||c.until>T.ms))return{state:"reported",c,wins};
+  const cur=wins.find(w=>w[0]<=T.mins&&T.mins<w[1]);
+  if(cur){const left=cur[1]-T.mins;return{state:left<=30?"soon":"open",until:cur[1],left,wins,cur}}
+  const nx=wins.find(w=>w[0]>T.mins);if(nx)return{state:"later",at:nx[0],wins};
+  for(let i=1;i<=7;i++){const dd=(T.day+i)%7,w=winsOn(v,sport,dd);if(w.length)return{state:"closed",nextDay:dd,at:w[0][0],tomorrow:i===1,wins}}
+  return{state:"closed",wins}}
+function pillText(st,T){
+  if(st.state==="reported")return"Closed, reported";
+  if(st.state==="open")return(T.live?"Open now":"Open then")+" until "+fmt(st.until);
+  if(st.state==="soon")return"Closes in "+st.left+" min";
+  if(st.state==="later")return"Opens "+fmt(st.at);
+  return st.nextDay==null?"Nothing posted":"Next: "+(st.tomorrow?"tomorrow":DAYS[st.nextDay])+" "+fmt(st.at)}
+const RANK={open:0,soon:1,later:2,closed:3,reported:4};
+
+function compute(){const T=target();
+  const all=VENUES.filter(v=>offers(v,state.sport)&&(state.env==="both"||v.kind===state.env)).map(v=>({v,o:offset(v),st:status(v,state.sport,T)}));
+  let rows=all.filter(r=>r.o.dist<=state.radius);
+  if(state.openOnly)rows=rows.filter(r=>r.st.state==="open"||r.st.state==="soon");
+  rows.sort((a,b)=>RANK[a.st.state]-RANK[b.st.state]||a.o.dist-b.o.dist);
+  return{T,rows,all}}
+
+/* ---------- render ---------- */
+function render(soft){
+  if(soft&&ui.report&&$("list").contains(document.activeElement)){dirty=true;return}
+  dirty=false;const{T,rows,all}=compute();
+  const sportName=SPORTS.find(x=>x[0]===state.sport)[1].toLowerCase(),place=PLACES[state.from][0];
+  const nOpen=rows.filter(r=>r.st.state==="open"||r.st.state==="soon").length;
+  const head=$("headline");head.textContent="";
+  head.append(h("b",null,String(nOpen)),` ${nOpen===1?"spot":"spots"} open for ${sportName} `,T.live?"right now":`${DAYS[T.day]} at ${fmt(T.mins)}`);
+  $("sub").textContent=`${rows.length} ${rows.length===1?"match":"matches"} within ${state.radius} mi of ${place}`+(state.env==="both"?"":`, ${state.env} only`)+". Open ones are listed first, then by distance.";
+  const list=$("list");list.textContent="";
+  if(!rows.length){
+    const pool=all.filter(r=>!state.openOnly||r.st.state==="open"||r.st.state==="soon").sort((a,b)=>a.o.dist-b.o.dist)[0];
+    const box=h("div",{class:"empty"},h("strong",null,`Nothing ${state.openOnly?"open ":""}for ${sportName} within ${state.radius} mi.`));
+    if(pool&&pool.o.dist>state.radius&&Math.ceil(pool.o.dist)<=15)box.append(h("span",null,`The closest match is ${pool.v.name}, ${pool.o.dist.toFixed(1)} mi away.`),
+      h("button",{class:"btn solid",type:"button",onclick:()=>{set({radius:Math.ceil(pool.o.dist)})}},`Widen to ${Math.ceil(pool.o.dist)} mi`));
+    else if(state.openOnly)box.append(h("button",{class:"btn solid",type:"button",onclick:()=>set({openOnly:false})},"Show closed ones too"));
+    else if(state.env!=="both")box.append(h("button",{class:"btn solid",type:"button",onclick:()=>set({env:"both"})},"Search indoor and outdoor"));
+    list.append(box)}
+  rows.forEach((r,i)=>list.append(card(r,i+1,T)));
+  drawRadar(rows);renderBoard(T);
+  lastSig=sig(rows,T);
+  if(T.live){const now={};rows.forEach(r=>now[r.v.id]=r.st.state);
+    if(prev)for(const id in now){const a=prev[id],b=now[id];if(!a)continue;
+      if((a==="open"||a==="soon")&&(b==="later"||b==="closed"))toast(`${VBY[id].name}: ${sportName} time just ended.`,"warn");
+      else if(a==="open"&&b==="soon")toast(`${VBY[id].name} closes for ${sportName} in 30 minutes.`,"warn")}
+    prev=now}else prev=null}
+function sig(rows,T){return rows.map(r=>r.v.id+pillText(r.st,T)).join("|")}
+
+function card({v,o,st},n,T){
+  const el=h("article",{class:"card "+st.state,id:"card-"+v.id});
+  el.append(h("div",{class:"top"},h("div",{class:"name"},h("span",{class:"num"},String(n)),h("h3",null,v.name)),h("span",{class:"pill "+st.state},pillText(st,T))));
+  el.append(h("div",{class:"meta"},`${o.dist.toFixed(1)} mi ${compass(o.dx,o.dy)} · ${v.kind==="indoor"?"Indoor gym":"Outdoor court"} · ${v.addr}`));
+  if(st.state==="reported"){const c=st.c;
+    el.append(h("div",{class:"alert"},h("strong",null,REASONS[c.reason]||"Closed"),`. Posted ${stamp(c.at)}, ${c.until==null?"until further notice":"through "+stamp(c.until)}.`,c.note?" "+c.note:""));}
+  const wins=h("div",{class:"wins"},h("span",{class:"meta"},(T.live?"Today":DAYS[T.day])+":"));
+  if(st.wins.length)st.wins.forEach(w=>wins.append(h("span",{class:"win"+(st.cur===w?" cur":"")},`${fmt(w[0])} to ${fmt(w[1])}`+(w[2]&&v.kind==="indoor"?` · ${w[2]}`:""))));
+  else wins.append(h("span",{class:"meta"},"no open play posted"));
+  el.append(wins);
+  if(v.kind==="outdoor")el.append(h("p",{class:"note"},"First come, first served during city park hours. ",v.note));
+  else if(v.note)el.append(h("p",{class:"note"},v.note));
+  if(v.stale)el.append(h("p",{class:"note flag"},"Possibly outdated. ",v.stale));
+  const acts=h("div",{class:"acts"});
+  if(v.phone)acts.append(h("span",null,"Call "+v.phone));
+  acts.append(h("a",{href:"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(v.addr),target:"_blank",rel:"noopener"},"Directions"),
+              h("a",{href:v.url,target:"_blank",rel:"noopener"},"Source"));
+  if(live.db&&live.canWrite!==false){
+    if(st.state==="reported")acts.append(h("button",{class:"btn",type:"button",disabled:ui.busy,onclick:()=>reopen(v.id)},"Mark as open again"));
+    else if(ui.report!==v.id)acts.append(h("button",{class:"btn",type:"button",onclick:()=>{ui.report=v.id;ui.msg="";render()}},"Report closed"));}
+  el.append(acts);
+  if(ui.report===v.id&&st.state!=="reported")el.append(reportForm(v));
+  const wk=h("details",{open:ui.week.has(v.id)},h("summary",null,"Full week"));
+  wk.addEventListener("toggle",()=>wk.open?ui.week.add(v.id):ui.week.delete(v.id));
+  const dl=h("dl",{class:"week"});
+  DAYS.forEach((dn,di)=>{const w=winsOn(v,state.sport,di);dl.append(h("dt",null,dn),h("dd",null,w.length?w.map(x=>`${fmt(x[0])} to ${fmt(x[1])}`).join(", "):"None"))});
+  wk.append(dl);el.append(wk);return el}
+
+function reportForm(v){const id=v.id;
+  const reason=h("select",{id:"r-reason-"+id},Object.entries(REASONS).map(([k,t])=>h("option",{value:k},t)));reason.value=ui.draft.reason;
+  const dur=h("select",{id:"r-dur-"+id},h("option",{value:"hour"},"The next hour"),h("option",{value:"today"},"Rest of today"),h("option",{value:"open"},"Until someone reopens it"));dur.value=ui.draft.dur;
+  const note=h("input",{id:"r-note-"+id,type:"text",maxlength:"120",placeholder:"Optional detail, like a sign on the door",value:ui.draft.note});
+  reason.onchange=()=>ui.draft.reason=reason.value;dur.onchange=()=>ui.draft.dur=dur.value;note.oninput=()=>ui.draft.note=note.value;
+  const f=h("form",{class:"form"},
+    h("div",{class:"field"},h("label",{class:"lab",for:"r-reason-"+id},"Why"),reason),
+    h("div",{class:"field"},h("label",{class:"lab",for:"r-dur-"+id},"For how long"),dur),
+    h("div",{class:"field grow"},h("label",{class:"lab",for:"r-note-"+id},"Note"),note),
+    h("button",{class:"btn solid",type:"submit",disabled:ui.busy},ui.busy?"Posting":"Post to everyone"),
+    h("button",{class:"btn",type:"button",onclick:()=>{ui.report=null;render()}},"Cancel"),
+    ui.msg?h("p",{class:"note flag",style:"flex-basis:100%;margin:0"},ui.msg):null);
+  f.addEventListener("submit",e=>{e.preventDefault();report(id)});return f}
+
+function drawRadar(rows){const svg=$("radar");svg.textContent="";const R=state.radius,k=100/R;
+  svg.append(s("rect",{x:-120,y:-120,width:240,height:240,fill:"var(--apron)"}),s("circle",{r:100,fill:"var(--court)",stroke:"var(--courtline)","stroke-width":2.2}));
+  const step=R<=3?1:R<=8?2:5;
+  for(let m=step;m<R;m+=step)svg.append(s("circle",{r:m*k,fill:"none",stroke:"var(--courtline)","stroke-width":.7,"stroke-opacity":.45}),
+    s("text",{x:m*k+2,y:-2.5,fill:"var(--courtline)","fill-opacity":.75,"font-size":6.5,"font-family":"var(--body)"},m+" mi"));
+  svg.append(s("line",{x1:-100,y1:0,x2:100,y2:0,stroke:"var(--courtline)","stroke-width":.7,"stroke-opacity":.45}),s("line",{x1:0,y1:-100,x2:0,y2:100,stroke:"var(--courtline)","stroke-width":.7,"stroke-opacity":.45}),
+    s("text",{x:0,y:-106,fill:"var(--courtline)","font-size":10,"font-weight":800,"font-family":"var(--display)","text-anchor":"middle"},"N"),
+    s("text",{x:-112,y:113,fill:"var(--courtline)","font-size":7,"font-family":"var(--body)"},`Edge of circle is ${R} mi`),
+    s("circle",{r:3.2,fill:"var(--courtline)"}),s("circle",{r:6.5,fill:"none",stroke:"var(--courtline)","stroke-width":1}));
+  const placed=[];rows.forEach(r=>{let x=r.o.dx*k,y=-r.o.dy*k,n=0;while(placed.some(q=>Math.hypot(q[0]-x,q[1]-y)<15)&&n++<8){x+=10;y+=n%2?6:-6}placed.push([x,y]);r.px=x;r.py=y});
+  rows.slice().reverse().forEach(r=>{const n=rows.indexOf(r)+1,x=r.px,y=r.py,stt=r.st.state,on=stt==="open"||stt==="soon";
+    const fill=stt==="reported"?"var(--bad)":on?"var(--ball)":stt==="later"?"var(--courtline)":"var(--court)";
+    const ink=stt==="reported"||stt==="closed"?"var(--courtline)":"#13201a";
+    const shape=r.v.kind==="indoor"?s("circle",{r:7.5,fill,stroke:"var(--courtline)","stroke-width":1.4}):s("rect",{x:-6.6,y:-6.6,width:13.2,height:13.2,transform:"rotate(45)",fill,stroke:"var(--courtline)","stroke-width":1.4});
+    const g=s("g",{class:"dot",transform:`translate(${x.toFixed(1)} ${y.toFixed(1)})`,tabindex:0,role:"button","aria-label":`${n}. ${r.v.name}, ${pillText(r.st,target())}`,
+      onclick:()=>jump(r.v.id),onkeydown:e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();jump(r.v.id)}}},
+      on?s("circle",{class:"pulse",r:7.5,fill:"none",stroke:"var(--ball)","stroke-width":1.5}):null,shape,s("text",{fill:ink},String(n)));
+    svg.append(g)})}
+function jump(id){const c=$("card-"+id);if(!c)return;c.scrollIntoView({behavior:"smooth",block:"center"});c.classList.add("flash");setTimeout(()=>c.classList.remove("flash"),1400)}
+
+function renderBoard(T){T=T||target();const ul=$("board");ul.textContent="";
+  const msg={connecting:"Connecting to live reports.",slow:"Live reports can't be reached yet. Posted schedules still update by the clock.",
+    off:"Shared live reports are off in this view. Posted schedules and known city notices still update by the clock.",
+    on:live.canWrite===false?"Live. You'll see closures the moment someone posts one. Posting needs Contributor access to this page.":"Live. Closures posted by anyone using this page show up here within seconds."}[live.status];
+  $("liveState").textContent=msg;$("beat").className="beat"+(live.status==="on"?"":" off");
+  const now=Date.now();
+  Object.entries(closures).filter(([id,c])=>VBY[id]&&(c.until==null||c.until>now)).sort((a,b)=>b[1].at-a[1].at).forEach(([id,c])=>
+    ul.append(h("li",null,h("span",{class:"tick bad"},"Closed"),h("strong",null,VBY[id].name),h("span",null,`${REASONS[c.reason]||"Closed"}, posted ${stamp(c.at)}, ${c.until==null?"until further notice":"through "+stamp(c.until)}.`+(c.note?" "+c.note:"")))));
+  if(T.live)VENUES.forEach(v=>SPORTS.forEach(([sp,name])=>{if(!offers(v,sp)||v.kind==="outdoor"&&T.mins<1290)return;const st=status(v,sp,T);
+    if(st.state==="soon")ul.append(h("li",null,h("span",{class:"tick warn"},"Closing"),h("strong",null,v.name),h("span",null,`${name} ends at ${fmt(st.until)}, ${st.left} min from now.`)))}));
+  if(!ul.children.length)ul.append(h("li",{class:"hint"},live.status==="on"?"No closures reported and nothing is about to close.":"Nothing is about to close."))}
+
+function toast(text,kind){const t=h("div",{class:"toast",style:`--t:var(--${kind==="bad"?"bad":kind==="ok"?"ok":"warn"})`},h("span",null,text),h("button",{type:"button","aria-label":"Dismiss",onclick:()=>t.remove()},"×"));
+  $("toasts").append(t);setTimeout(()=>t.remove(),9000);while($("toasts").children.length>4)$("toasts").firstChild.remove()}
+
+/* ---------- live closures (shared between everyone on the page) ---------- */
+function clean(id,b){if(!VBY[id]||!b||typeof b.at!=="number")return null;
+  return{reason:REASONS[b.reason]?b.reason:"other",note:typeof b.note==="string"?b.note.slice(0,120):"",at:b.at,until:typeof b.until==="number"?b.until:null}}
+async function connect(){
+  if(!window.claude||!window.claude.use){live.status="off";renderBoard();return}
+  const [db,user]=await Promise.all([window.claude.use("db"),window.claude.use("user")]);
+  if(!db){live.status="off";render(true);return}
+  live.db=db;
+  if(user){try{live.canWrite=await user.can("data.write");live.uid=await user.id()}catch(e){}}
+  const timer=setTimeout(()=>{if(live.status==="connecting"){live.status="slow";renderBoard()}},10000);
+  let first=true;
+  db.collection("closures").onSnapshot(snap=>{
+    if(!snap.metadata.fromCache){clearTimeout(timer);live.status="on"}
+    const next={};snap.docs.forEach(x=>{const c=clean(x.id,x.data());if(c)next[x.id]=c});
+    if(!first)snap.docChanges().forEach(ch=>{const v=VBY[ch.doc.id];if(!v)return;
+      if(ch.type==="removed")toast(`${v.name} was marked open again.`,"ok");
+      else{const c=clean(ch.doc.id,ch.doc.data());if(c&&(c.until==null||c.until>Date.now()))toast(`${v.name} was just reported closed: ${REASONS[c.reason]}.`,"bad")}});
+    first=false;closures=next;render(true)},
+  ()=>{clearTimeout(timer);live.status="off";render(true)})}
+async function report(id){if(ui.busy||!live.db)return;const n=Date.now(),a=austin(n);
+  const until=ui.draft.dur==="hour"?n+36e5:ui.draft.dur==="today"?n+(1439-a.mins)*6e4:null;
+  ui.busy=true;ui.msg="";render();
+  try{await live.db.doc("closures/"+id).set({venue:id,reason:ui.draft.reason,note:ui.draft.note.trim().slice(0,120),at:n,until,by:live.uid||"visitor"});
+    ui.report=null;ui.draft.note=""}
+  catch(e){if(e&&e.code==="invalid_argument"){live.canWrite=false;ui.report=null;toast("Your access to this page lets you see closures but can't post them.","warn")}
+    else ui.msg="That didn't post. Check your connection and try again."}
+  ui.busy=false;render()}
+async function reopen(id){if(ui.busy||!live.db)return;ui.busy=true;render();
+  try{await live.db.doc("closures/"+id).delete()}catch(e){if(e&&e.code==="invalid_argument")live.canWrite=false;toast("That didn't go through. Try again in a moment.","warn")}
+  ui.busy=false;render()}
+
+/* ---------- controls ---------- */
+function save(){try{localStorage.setItem("gotnext-v1",JSON.stringify(state))}catch(e){}}
+function set(patch){Object.assign(state,patch);prev=null;save();syncControls();render()}
+function syncControls(){
+  document.querySelectorAll("#sports .chip").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.v===state.sport)));
+  document.querySelectorAll("#env button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.v===state.env)));
+  $("radius").value=state.radius;$("radiusOut").textContent=state.radius+" mi";$("from").value=state.from;$("openOnly").checked=state.openOnly;
+  $("when").value=state.when;$("whenDay").hidden=$("whenTime").hidden=state.when==="now";$("whenDay").value=state.day;
+  $("whenTime").value=String(Math.floor(state.time/60)).padStart(2,"0")+":"+String(state.time%60).padStart(2,"0")}
+function start(saved){
+  try{Object.assign(state,JSON.parse(localStorage.getItem("gotnext-v1")||"{}"))}catch(e){}
+  if(saved&&saved.sport)Object.assign(state,saved);
+  if(!SPORTS.some(x=>x[0]===state.sport))state.sport="basketball";
+  if(!PLACES[state.from])state.from=0;state.radius=Math.min(15,Math.max(1,+state.radius||5));
+  SPORTS.forEach(([v,t])=>$("sports").append(h("button",{class:"chip",type:"button","data-v":v,onclick:()=>set({sport:v})},t)));
+  PLACES.forEach((p,i)=>$("from").append(h("option",{value:i},p[0])));
+  DAYS.forEach((dn,i)=>$("whenDay").append(h("option",{value:i},dn)));
+  document.querySelectorAll("#env button").forEach(b=>b.onclick=()=>set({env:b.dataset.v}));
+  $("radius").oninput=e=>set({radius:+e.target.value});
+  $("from").onchange=e=>set({from:+e.target.value});
+  $("openOnly").onchange=e=>set({openOnly:e.target.checked});
+  $("when").onchange=e=>set({when:e.target.value});
+  $("whenDay").onchange=e=>set({day:+e.target.value});
+  $("whenTime").onchange=e=>{const[a,b]=(e.target.value||"18:00").split(":").map(Number);set({time:a*60+b})};
+  syncControls();render();tick();setInterval(tick,15000);connect();
+  document.addEventListener("focusout",()=>setTimeout(()=>{if(dirty)render(true)},50))}
+function tick(){const n=austin(Date.now());$("clock").textContent=`${DAYS[n.day]} ${fmt(n.mins)} Austin time`;
+  const{T,rows}=compute();if(sig(rows,T)!==lastSig)render(true);else renderBoard(T)}
+if(window.claude&&window.claude.hot){window.claude.hot.snapshot(()=>state);window.claude.hot.ready?window.claude.hot.ready(start):start(window.claude.hot.data||{})}else start({});
+</script>
+</body>
+</html>
