@@ -21,11 +21,12 @@ It is a single file with no build step. Open `index.html` in a browser, or serve
 **Data**
 
 - Indoor times are the free open play hours each City of Austin recreation center posted on its gym schedule, collected November 11, 2026.
-- Outdoor courts and fields come from the city's pickleball, sand volleyball and soccer pages. They are treated as open during city park hours, 5 a.m. to 10 p.m., unless the city posts shorter court hours.
-- Venue coordinates are approximate, so distances are straight-line estimates.
+- Outdoor courts and fields come from the City of Austin parks facility inventory (the `pard_facility_points` map service), pulled November 11, 2026: 103 parks with real coordinates. They are treated as open during city park hours, 5 a.m. to 10 p.m., unless the city posts shorter court hours.
+- Distances are straight lines from the starting point.
+- Coverage is the City of Austin park system. Suburban parks (Round Rock, Pflugerville, Cedar Park and others) are not included yet.
 - The city changes gym schedules without notice. Venues with an older schedule are marked "Possibly outdated" in the app.
 
-To add or update a venue, edit the `VENUES` list near the top of the script in `index.html`.
+To add or update a rec center, edit the `VENUES` list near the top of the script in `index.html`. Parks live in the `PARK_DATA` block, one line per park.
 
 **Live closure reports**
 

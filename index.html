@@ -227,7 +227,7 @@
 
   <section class="about">
     <h2>About</h2>
-    <p>Indoor times are the free open play hours each City of Austin recreation center posted on its gym schedule, collected November 11, 2026. Outdoor courts and fields are first come, first served. Most follow city park hours, 5 a.m. to 10 p.m., and some courts post shorter hours. The city changes gym schedules without notice.</p>
+    <p>Indoor times are the free open play hours each City of Austin recreation center posted on its gym schedule, collected November 11, 2026. Outdoor courts and fields come from the city's parks facility inventory and are first come, first served unless marked. Most follow city park hours, 5 a.m. to 10 p.m., and some courts post shorter hours. The city changes gym schedules without notice.</p>
   </section>
 </div>
 <div class="toasts" id="toasts" aria-live="assertive"></div>
@@ -243,94 +243,43 @@ const WK=[1,2,3,4,5],ALL=[0,1,2,3,4,5,6];
 const PBU="https://www.austintexas.gov/parks/pickleball",VBU="https://www.austintexas.gov/parks/sand-volleyball-courts",SOC="https://www.austintexas.gov/soccer";
 const ARC_OPEN=[...d(1,14.25,15,"Open gym, shared court"),...d(2,9,11.75,"Open gym, shared court"),...d(2,13.75,16,"Open gym, shared court"),...d(4,9,10.25,"Open gym, shared court"),...d(6,12.75,15.25,"Open gym, shared court")];
 const VENUES=[
- {id:"montopolis",kind:"indoor",name:"Montopolis Rec Center",addr:"1200 Montopolis Dr, Austin, TX 78741",phone:"512-978-2300",lat:30.2330,lon:-97.6990,
+ {id:"montopolis",kind:"indoor",name:"Montopolis Rec Center",addr:"1200 Montopolis Dr, Austin, TX 78741",phone:"512-978-2300",lat:30.2325,lon:-97.7006,
   url:"https://www.austintexas.gov/parks/locations/montopolis-recreation-and-community-center",
   sessions:{basketball:[...d(0,10,15.75),...d(WK,12,15)],pickleball:[...d(6,10,13),...d(2,18,20.75)],volleyball:d(3,18,20.75)}},
- {id:"dovesprings",kind:"indoor",name:"Dove Springs Rec Center",addr:"5801 Ainez Dr, Austin, TX 78744",phone:"512-974-3840",lat:30.1885,lon:-97.7340,
+ {id:"dovesprings",kind:"indoor",name:"Dove Springs Rec Center",addr:"5801 Ainez Dr, Austin, TX 78744",phone:"512-974-3840",lat:30.1874,lon:-97.7381,
   url:"https://www.austintexas.gov/parks/locations/george-morales-dove-springs-recreation-center",
   sessions:{basketball:[...d(0,12,15.5),...d(1,12,17),...d(1,18,20.5),...d(2,11,17),...d(2,18,20.5),...d(3,9,17),...d(4,9,17),...d(5,12,17),...d(5,18,20.5),...d(6,10,15.5)],
             pickleball:[...d([1,5],9,12),...d(3,18,20.5)]}},
- {id:"sarc",kind:"indoor",name:"South Austin Rec Center",addr:"1100 Cumberland Rd, Austin, TX 78704",phone:"512-978-2440",lat:30.2405,lon:-97.7680,
+ {id:"sarc",kind:"indoor",name:"South Austin Rec Center",addr:"1100 Cumberland Rd, Austin, TX 78704",phone:"512-978-2440",lat:30.2419,lon:-97.7680,
   url:"https://www.austintexas.gov/parks/south-austin-recreation-center",
   sessions:{basketball:[...d(1,11,16),...d(2,14,16),...d(3,13,16),...d(4,14,16),...d(5,14,16),...d(6,9,13,"Adults"),...d(6,13,15,"Family and women")],
             pickleball:[...d(2,18,21),...d(4,11,14)]}},
- {id:"dittmar",kind:"indoor",name:"Dittmar Rec Center",addr:"1009 W Dittmar Rd, Austin, TX 78745",phone:"512-974-6090",lat:30.1820,lon:-97.7990,
+ {id:"dittmar",kind:"indoor",name:"Dittmar Rec Center",addr:"1009 W Dittmar Rd, Austin, TX 78745",phone:"512-974-6090",lat:30.1842,lon:-97.8024,
   url:"https://www.austintexas.gov/parks/locations/dittmar-recreation-center",
   sessions:{basketball:[...d(0,14,16),...d([1,3,5],12,15,"Adults"),...d(4,18,21)],pickleball:[...d([2,4],12,15),...d(6,10,14)],
             badminton:[...d(0,10,14),...d(2,18,21)],volleyball:d(3,18,21),soccer:d(5,18,21,"Indoor futsal. Ask if it is drop-in.")}},
- {id:"zaragoza",kind:"indoor",name:"Parque Zaragoza Rec Center",addr:"2608 Gonzales St, Austin, TX 78702",phone:"512-978-2460",lat:30.2617,lon:-97.7108,
+ {id:"zaragoza",kind:"indoor",name:"Parque Zaragoza Rec Center",addr:"2608 Gonzales St, Austin, TX 78702",phone:"512-978-2460",lat:30.2620,lon:-97.7105,
   url:"https://www.austintexas.gov/parks/parque-zaragoza-recreation-center",
   sessions:{basketball:d([2,4],11,14),pickleball:d(3,12,14)}},
- {id:"panam",kind:"indoor",name:"Pan Am Rec Center",addr:"2100 E 3rd St, Austin, TX 78702",phone:"512-978-2425",lat:30.2580,lon:-97.7215,
+ {id:"panam",kind:"indoor",name:"Pan Am Rec Center",addr:"2100 E 3rd St, Austin, TX 78702",phone:"512-978-2425",lat:30.2590,lon:-97.7225,
   url:"https://austintexas.gov/department/oswaldo-ab-cantupan-american-recreation-center",
   sessions:{basketball:d(6,12,16)}},
  {id:"arc",kind:"indoor",name:"Austin Rec Center",addr:"1301 Shoal Creek Blvd, Austin, TX 78701",phone:"512-978-2370",lat:30.2775,lon:-97.7505,
   url:"https://www.austintexas.gov/AustinRec",
   
   sessions:{basketball:ARC_OPEN,volleyball:ARC_OPEN,badminton:[...ARC_OPEN,...d(0,14,15.5)],pickleball:[...ARC_OPEN,...d(1,9.25,11.5),...d(3,9,10.75),...d(5,9,11.5)]}},
- {id:"gusgarcia",kind:"indoor",name:"Gus Garcia Rec Center",addr:"1201 E Rundberg Ln, Austin, TX 78753",phone:"512-978-2525",lat:30.3565,lon:-97.6880,
+ {id:"gusgarcia",kind:"indoor",name:"Gus Garcia Rec Center",addr:"1201 E Rundberg Ln, Austin, TX 78753",phone:"512-978-2525",lat:30.3529,lon:-97.6821,
   url:"https://www.austintexas.gov/parks/locations/gustavo-gus-l-garcia-recreation-center",
   sessions:{basketball:[...d(0,14.5,17),...d([1,3],12,14,"General open play"),...d([1,2,3],18,21),...d(6,12,16,"Shared with volleyball")],
             volleyball:[...d(5,18,21),...d(6,12,16,"Shared with basketball")],pickleball:[...d(0,13,14.5),...d([2,4],11,13),...d(6,10,12)]}},
- {id:"metz",kind:"outdoor",name:"Metz Park courts",addr:"2407 Canterbury St, Austin, TX 78702",lat:30.2530,lon:-97.7190,
-  url:"https://www.austintexas.gov/parks/locations/rodolfo-rudy-mendez-recreation-center",
-  sports:["basketball","tennis"]},
- {id:"sarcout",kind:"outdoor",name:"South Austin Rec Center outdoor courts",addr:"1100 Cumberland Rd, Austin, TX 78704",lat:30.2400,lon:-97.7675,
-  url:"https://www.austintexas.gov/parks/south-austin-recreation-center",
-  sports:["basketball","tennis","pickleball","soccer"],hrs:{pickleball:d(ALL,8,22)}},
- {id:"givens",kind:"outdoor",name:"Givens District Park",addr:"3811 E 12th St, Austin, TX 78721",lat:30.2780,lon:-97.6945,
-  url:"https://austinparks.org/blog/basketball-courts-austin-texas/",
-  sports:["basketball","pickleball","tennis","soccer"]},
- {id:"searight",kind:"outdoor",name:"Mary Moore Searight Park",addr:"907 W Slaughter Ln, Austin, TX 78748",lat:30.1605,lon:-97.7990,
-  url:"https://austinparks.org/blog/basketball-courts-austin-texas/",
-  sports:["basketball","tennis","pickleball","volleyball"],hrs:{pickleball:d(ALL,7,22)}},
- {id:"nichols",kind:"outdoor",name:"Dick Nichols District Park",addr:"8011 Beckett Rd, Austin, TX 78749",lat:30.2075,lon:-97.8600,
-  url:PBU,
-  sports:["basketball","tennis","pickleball","volleyball"],hrs:{pickleball:d(ALL,7,22)}},
- {id:"austinhigh",kind:"outdoor",name:"Austin High Tennis Center",addr:"2001 W Cesar Chavez St, Austin, TX 78703",lat:30.2728,lon:-97.7672,url:PBU,
-  sports:["tennis","pickleball"],hrs:{tennis:[...d(WK,17.5,22),...d([0,6],7,22)],pickleball:[...d(WK,17.5,22),...d([0,6],7,22)]}},
- {id:"panampark",kind:"outdoor",name:"Pan American Neighborhood Park",addr:"307 Chicon St, Austin, TX 78702",lat:30.2588,lon:-97.7228,url:PBU,
-  sports:["pickleball"],hrs:{pickleball:[...d([1,3,5],7,22),...d([2,4],7,19),...d([0,6],7,9)]}},
- {id:"rosewood",kind:"outdoor",name:"Rosewood Neighborhood Park",addr:"2300 Rosewood Ave, Austin, TX 78702",lat:30.2712,lon:-97.7135,url:PBU,
-  sports:["pickleball","tennis"],hrs:{pickleball:d(ALL,7,22)}},
- {id:"littlezilker",kind:"outdoor",name:"Little Zilker Neighborhood Park",addr:"2016 Bluebonnet Ln, Austin, TX 78704",lat:30.2548,lon:-97.7742,url:PBU,
-  sports:["pickleball","tennis"],hrs:{pickleball:d(ALL,7,22)}},
- {id:"littlestacy",kind:"outdoor",name:"Little Stacy Neighborhood Park",addr:"1500 Alameda Dr, Austin, TX 78704",lat:30.2478,lon:-97.7418,url:"https://mytennislessons.com/blog/?p=2925",
-  sports:["tennis"]},
- {id:"patterson",kind:"outdoor",name:"Patterson Neighborhood Park",addr:"4200 Brookview Rd, Austin, TX 78722",lat:30.2990,lon:-97.7155,url:PBU,
-  sports:["pickleball","tennis","volleyball"],hrs:{pickleball:d(ALL,7,22)}},
- {id:"shipe",kind:"outdoor",name:"Shipe Neighborhood Park",addr:"4400 Avenue G, Austin, TX 78751",lat:30.3068,lon:-97.7272,url:PBU,
-  sports:["pickleball","tennis"],hrs:{pickleball:d(ALL,7,22)}},
- {id:"donbaylor",kind:"outdoor",name:"Don Baylor Neighborhood Park",addr:"2008 Enfield Rd, Austin, TX 78703",lat:30.2878,lon:-97.7728,url:PBU,
-  sports:["pickleball","tennis"],hrs:{pickleball:d(ALL,7,22)}},
- {id:"clarksville",kind:"outdoor",name:"Mary Frances Baylor Clarksville Park",addr:"1811 W 11th St, Austin, TX 78703",lat:30.2803,lon:-97.7628,url:PBU,
-  sports:["pickleball"],hrs:{pickleball:d(ALL,7,22)}},
- {id:"hancock",kind:"outdoor",name:"Hancock Rec Center outdoor court",addr:"811 E 41st St, Austin, TX 78751",lat:30.2995,lon:-97.7240,url:PBU,
-  sports:["pickleball","tennis","soccer"],hrs:{pickleball:[...d(WK,7,14.5),...d(WK,18.5,20.5),...d([0,6],7,20.5)]}},
- {id:"nwdistrict",kind:"outdoor",name:"Beverly S. Sheffield Northwest Park",addr:"7000 Ardath St, Austin, TX 78757",lat:30.3460,lon:-97.7430,url:PBU,
-  sports:["pickleball","tennis"],hrs:{pickleball:d(ALL,7,22)}},
- {id:"brentwood",kind:"outdoor",name:"Brentwood Neighborhood Park",addr:"6710 Arroyo Seco, Austin, TX 78757",lat:30.3390,lon:-97.7330,url:PBU,
-  sports:["pickleball","tennis","volleyball"],hrs:{pickleball:d(ALL,7,22)}},
- {id:"gusgarciapark",kind:"outdoor",name:"Gus Garcia District Park",addr:"1201 E Rundberg Ln, Austin, TX 78753",lat:30.3558,lon:-97.6895,url:PBU,
-  sports:["pickleball","tennis","soccer"],hrs:{pickleball:d(ALL,7,22)}},
- {id:"nwrec",kind:"indoor",name:"Northwest Rec Center",addr:"2913 Northland Dr, Austin, TX 78731",phone:"512-974-6972",lat:30.3338,lon:-97.7570,url:PBU,
+ {id:"nwrec",kind:"indoor",name:"Northwest Rec Center",addr:"2913 Northland Dr, Austin, TX 78731",phone:"512-974-6972",lat:30.3334,lon:-97.7510,url:PBU,
   sessions:{pickleball:d([1,3],10.5,13.5)}},
- {id:"nwrecout",kind:"outdoor",name:"Northwest Rec Center grounds",addr:"2913 Northland Dr, Austin, TX 78731",lat:30.3334,lon:-97.7576,url:VBU,
-  sports:["volleyball","soccer"]},
- {id:"zilker",kind:"outdoor",name:"Zilker Park Great Lawn sand courts",addr:"2100 Barton Springs Rd, Austin, TX 78746",lat:30.2672,lon:-97.7705,url:VBU,
-  sports:["volleyball"]},
- {id:"pease",kind:"outdoor",name:"Pease District Park",addr:"1100 Kingsbury St, Austin, TX 78703",lat:30.2815,lon:-97.7520,url:VBU,
-  sports:["volleyball"]},
- {id:"gillis",kind:"outdoor",name:"Gillis Neighborhood Park",addr:"2410 Durwood Ave, Austin, TX 78704",lat:30.2440,lon:-97.7625,url:VBU,
-  sports:["volleyball"]},
- {id:"zaragozapark",kind:"outdoor",name:"Parque Zaragoza Park sand court",addr:"2611 Webberville Rd, Austin, TX 78702",lat:30.2622,lon:-97.7102,url:VBU,
-  sports:["volleyball"]},
- {id:"bailey",kind:"outdoor",name:"Bailey Neighborhood Park",addr:"1101 W 33rd St, Austin, TX 78705",lat:30.3028,lon:-97.7485,url:VBU,
-  sports:["volleyball"]},
- {id:"dovepark",kind:"outdoor",name:"Dove Springs District Park",addr:"5801 Ainez Dr, Austin, TX 78744",lat:30.1878,lon:-97.7352,url:SOC,
-  sports:["soccer","volleyball"]},
- {id:"civitan",kind:"outdoor",name:"Civitan Neighborhood Park",addr:"513 Vargas Rd, Austin, TX 78741",lat:30.2342,lon:-97.6928,url:SOC,
-  sports:["soccer"]},
+ {id:"turnerroberts",kind:"indoor",name:"Turner-Roberts Rec Center",addr:"7201 Colony Loop Dr, Austin, TX 78724",phone:"512-978-2690",lat:30.2987,lon:-97.6376,
+  url:"https://www.austintexas.gov/parks/locations/turner-roberts-recreation-center",
+  sessions:{basketball:[...d([2,4,5],18,20.5),...d(6,10,15.5),...d(0,13,16.5)]}},
+ {id:"duffie",kind:"indoor",name:"Delores Duffie Rec Center",addr:"1182 N Pleasant Valley Rd, Austin, TX 78702",phone:"512-978-2465",lat:30.2713,lon:-97.7143,
+  url:"https://www.austintexas.gov/parks/locations/delores-duffie-recreation-center",
+  sessions:{basketball:d([1,5],18,21),volleyball:d(4,18,21)}},
 ];
 // What each place has, as [icon, text] pairs shown on its card. Hours are left to the time chips.
 const FEATS={
@@ -343,32 +292,8 @@ const FEATS={
  arc:[["users","Open gym shares a divided court with other sports"],["alert","Last posted schedule covered Oct 18 to 31"]],
  gusgarcia:[["doc","Fall 2026 schedule"]],
  nwrec:[["pickleball","Three indoor pickleball courts"],["doc","Times from the city's pickleball page"]],
- metz:[["roof","Covered basketball court"],["tennis","One tennis court"]],
- sarcout:[["basketball","One basketball court"],["tennis","Two tennis courts"],["pickleball","Two pickleball courts"],["soccer","Soccer field"],["light","Tennis and pickleball courts are lit"]],
- givens:[["basketball","Two basketball courts"],["tennis","Shared court: tennis or four pickleball courts"],["soccer","Soccer mini pitch"]],
- searight:[["basketball","Basketball court"],["tennis","Tennis courts with lines for four pickleball courts"],["volleyball","Two sand volleyball courts"],["net","Bring your own volleyball net"]],
- nichols:[["basketball","Basketball court"],["tennis","Two shared courts: tennis or five pickleball courts"],["volleyball","Two sand volleyball courts"],["light","Lit"]],
- austinhigh:[["tennis","Tennis courts"],["pickleball","Three dedicated pickleball courts"],["light","Lit"],["calendar","Shared with Austin High. Public play pauses for school events"]],
- panampark:[["pickleball","Three dedicated pickleball courts, plus one on a shared court"],["light","Lit"]],
- rosewood:[["pickleball","Two dedicated pickleball courts"],["tennis","Shared tennis court striped for two more"],["net","Bring your own net"],["light","Lit"]],
- littlezilker:[["tennis","Shared court: tennis or four pickleball courts"],["light","Lit"]],
- littlestacy:[["tennis","Two tennis courts"],["light","Lit"]],
- patterson:[["tennis","Shared court: tennis or two pickleball courts"],["volleyball","One sand volleyball court with a net"],["light","Shared court is lit"]],
- shipe:[["tennis","Shared court: tennis or two pickleball courts"],["light","Lit"]],
- donbaylor:[["tennis","Shared court: tennis or two pickleball courts"]],
- clarksville:[["pickleball","One dedicated pickleball court"]],
- hancock:[["tennis","Shared court: tennis or two pickleball courts"],["soccer","Soccer field"],["doc","Pickleball hours are for the school year"]],
- nwdistrict:[["tennis","Two shared courts: tennis or four pickleball courts"],["light","Lit"]],
- brentwood:[["tennis","Shared court: tennis or two pickleball courts"],["net","Bring a pickleball net"],["volleyball","One sand volleyball court"],["light","Lit"]],
- gusgarciapark:[["tennis","Shared court: tennis or two pickleball courts"],["soccer","Two soccer fields"],["calendar","Leagues may have the fields booked"]],
- nwrecout:[["volleyball","One sand volleyball court"],["net","Bring your own net"],["soccer","Soccer field"]],
- zilker:[["volleyball","Five sand volleyball courts"],["net","Bring your own net"],["calendar","Groups can reserve courts, so one may be taken"]],
- pease:[["volleyball","Three sand volleyball courts with nets"]],
- gillis:[["volleyball","One sand volleyball court with a net"]],
- zaragozapark:[["volleyball","One sand volleyball court with a net"]],
- bailey:[["volleyball","One sand volleyball court with a net"],["light","Lit"]],
- dovepark:[["soccer","Soccer mini pitch and two soccer fields"],["volleyball","One sand volleyball court with a net"],["calendar","Leagues may have the full fields booked"]],
- civitan:[["soccer","Soccer mini pitch"]],
+ turnerroberts:[["doc","Hours from the center's page"]],
+ duffie:[["doc","Hours from the center's page"]],
 };
 const IC={
  walk:'<circle cx="13" cy="4.500" r="2"/><path d="M13 8.500l-3.500 3.500 3 3v6M9.500 12L6 13M13 9.500l3 3 3.500 1M10.500 15.500L8 21"/>',
@@ -385,9 +310,148 @@ const IC={
  users:'<circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.300 2.700-6 6-6s6 2.700 6 6M16 5.300a3 3 0 0 1 0 5.400M18 14.500c1.800.9 3 2.800 3 5.500"/>',
  calendar:'<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M8 3v4M16 3v4"/>',
  doc:'<path d="M7 3h7l4 4v14H7zM14 3v4h4M10 12h5M10 16h5"/>',
+ fee:'<circle cx="12" cy="12" r="9"/><path d="M14.600 9.200c-.5-1-1.500-1.600-2.600-1.600-1.500 0-2.600.9-2.600 2.200 0 2.900 5.300 1.500 5.300 4.400 0 1.300-1.200 2.300-2.700 2.300-1.300 0-2.400-.7-2.900-1.800M12 6v1.600M12 16.500V18"/>',
 };
 function icon(k){const sp=document.createElement("span");sp.className="ic";
   sp.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(IC[k]||IC.doc)+'</svg>';return sp}
+/* Outdoor courts and fields: City of Austin parks facility inventory (pard_facility_points), pulled Nov 11, 2026.
+   One line per park: name|address|lat|lon|tennis dedicated.shared|pickleball dedicated.shared|basketball|volleyball (n = no net)|
+   soccer fields.multipurpose fields.mini pitches|lit sports|flags (F all fee, f some fee, R restricted, Y reservable). */
+const PARK_SRC="https://services.arcgis.com/0L95CJ0VTaxqcmED/ArcGIS/rest/services/pard_facility_points/FeatureServer";
+const PARK_DATA=`
+A.B. Dittmar Neighborhood Park|1009 W Dittmar Rd 78748|30.1842|-97.8024|0.0|0.0|0|0|0.1.0|s|
+Adams-Hemphill Neighborhood Park|201 W 30th St 78705|30.2944|-97.7391|0.0|0.0|1|0|0.1.0|bs|
+Alamo Pocket Park|2001 E 22nd St 78722|30.2828|-97.7203|0.0|0.3|1|0|0.1.0|spb|
+Austin High Tennis Center|1717 W Cesar Chavez St 78703|30.2746|-97.7689|8.0|3.0|0|0|0.0.0|tp|fRY
+Bailey Neighborhood Park|1101 W 33rd St 78705|30.3022|-97.7472|2.0|0.0|0|1|0.1.0|tvs|
+Balcones District Park|12017 Amherst Dr 78759|30.4127|-97.7187|0.0|0.1|1|1|0.1.0|s|
+Bartholomew District Park|1901 Shady Brook Ln 78723|30.3033|-97.6954|0.0|0.0|1|0|0.1.0|sb|RY
+Barton Hills School Park|2009 Homedale Dr 78704|30.2557|-97.7826|0.0|0.0|1|0|0.2.0|s|R
+Battlebend Springs Neighborhood Park|121 Sheraton Ave 78745|30.2139|-97.7675|0.0|0.0|1|0|0.0.0|b|
+Beverly S. Sheffield Northwest District Park|7000 Ardath St 78757|30.3500|-97.7415|2.2|0.4|1|0|0.0.0|tpb|
+Brentwood Neighborhood Park|6807 Yates Ave 78757|30.3411|-97.7314|1.1|0.2|1|1|0.1.0|tpsbv|
+Brownie Neighborhood Park|10001 1/2 Brownie Dr 78753|30.3635|-97.6871|0.0|0.0|1|0|0.1.0|s|
+Bull Creek District Park|6713 Lakewood Dr 78731|30.3674|-97.7857|0.0|0.0|0|1|0.0.0||
+Burnett "Blondie" Pharr Tennis Center|4201 Brookview Rd 78722|30.2968|-97.7092|8.0|0.0|1|1|0.0.0||f
+Buttermilk Neighborhood Park|7501 Providence Ave 78752|30.3328|-97.6951|0.0|0.0|3|0|0.1.0|bs|
+Caswell Tennis Center|2312 Shoal Creek Blvd 78705|30.2879|-97.7522|9.0|0.0|0|0|0.0.0|t|FY
+Cherry Creek Neighborhood Park|3403 Silk Oak Dr 78748|30.1894|-97.8442|0.0|0.0|1|0|0.0.0||
+Circle C Ranch on Slaughter Creek|6301 W Slaughter Ln 78739|30.1999|-97.8869|0.0|0.0|1|2|7.1.0|s|RY
+Civitan Neighborhood Park|513 Vargas Rd 78741|30.2378|-97.6900|0.0|4.0|0|0|0.0.1|s|
+Colony Park District Park|7201 Colony Loop Dr 78724|30.2987|-97.6376|0.0|0.0|0|0|1.0.0|s|
+Comal Pocket Park|1508 E 3rd St 78702|30.2608|-97.7281|0.0|0.0|1|0|0.0.0|b|
+Commons Ford Ranch Metro Park|614 N Commons Ford Rd 78733|30.3392|-97.8928|0.0|0.0|0|2|0.0.0||
+Conley-Guerrero Senior Activity Center|808 Nile St 78702|30.2656|-97.7114|0.0|0.0|1|0|0.0.0||
+Cook School Park|1505 Cripple Creek Dr 78758|30.3769|-97.7045|0.0|0.0|0|0|0.2.0|s|RY
+Cunningham School Park|6213 Buffalo Pass 78745|30.2110|-97.8056|0.0|0.0|1|0|0.2.0|s|RY
+Davis/White Northeast Neighborhood Park|5908 Coolbrook Dr 78724|30.3036|-97.6528|0.0|0.0|2|1|0.0.0|b|
+Dick Nichols District Park|8101 Beckett Rd 78749|30.2132|-97.8626|0.2|0.5|1|3|0.1.0|tpbvs|
+Don Baylor Neighborhood Park|2008 Enfield Rd 78703|30.2871|-97.7644|1.1|0.2|1|0|0.1.0|s|
+Doss School Park|7009 Northledge Dr 78731|30.3553|-97.7623|0.0|0.0|1|0|0.0.0||
+Dottie Jordan Neighborhood Park|2801 Loyola Ln 78723|30.3144|-97.6744|1.1|0.1|1|0|0.0.0|tbp|
+Dove Springs District Park|5801 Ainez Dr 78744|30.1874|-97.7381|0.0|0.0|1|1|3.0.1|s|
+Eastwoods Neighborhood Park|3001 Harris Park Ave 78705|30.2905|-97.7314|2.0|0.0|1|0|0.1.0|stb|
+Edward Rendon Sr. Metro Park at Festival Beach|2215 Riverview St 78702|30.2497|-97.7274|0.0|0.0|1|0|0.1.0|s|
+Emma Long Metro Park|1600 City Park Rd 78730|30.3280|-97.8419|0.0|0.0|1|4|0.0.0||F
+Forest North Neighborhood Park|13320 Lyndhurst St 78729|30.4683|-97.7839|3.0|0.0|0|0|0.0.0|t|
+Georgian Acres Neighborhood Park|500 E Powell Ln 78753|30.3462|-97.6992|0.0|0.0|1|0|0.0.0||
+Gillis Neighborhood Park|2410 Durwood Ave 78704|30.2406|-97.7593|0.0|0.0|1|1|0.1.0|bs|
+Givens District Park|3810 Oak Springs Dr 78721|30.2752|-97.6909|1.0|0.0|3|0|0.1.1|tbs|
+Govalle Neighborhood Park|5200 Bolm Rd 78721|30.2602|-97.6908|0.0|0.0|1|0|0.1.0||
+Gracywoods Neighborhood Park|12133 Metric Blvd 78758|30.4048|-97.6967|0.0|0.0|0|1|0.0.0||
+Grey Rock Golf Course|7401 S SH 45 W EB 78739|30.1804|-97.9116|8.0|0.0|0|0|0.0.0|t|FY
+Gullett School Park|6200 Treadwell Blvd 78757|30.3428|-97.7495|0.0|0.0|1|0|1.0.0|s|RY
+Gustavo "Gus" L. Garcia District Park|1201 E Rundberg Ln 78753|30.3529|-97.6821|0.0|0.2|1|0|0.2.0|spb|
+Hancock Golf Course|811 E 41st St 78751|30.2994|-97.7239|0.0|0.0|1|0|0.1.0|s|
+Highland Neighborhood Park and Reznicek Fields|401 W St Johns Ave 78752|30.3364|-97.7140|0.0|0.0|0|0|0.2.0||
+Hubert C. Schroeter Neighborhood Park|11701 Big Trl 78759|30.4137|-97.7378|0.0|0.0|1|0|0.0.0||
+James A. Garrison District Park|6001 Menchaca Rd 78745|30.2111|-97.8002|0.0|0.0|1|0|0.0.0|b|
+Joslin Neighborhood Park|2106 Cimaron Trl 78745|30.2288|-97.7923|1.1|0.0|0|0|0.1.0|ts|
+Kealing School Park|1600 Rosewood Ave 78702|30.2703|-97.7222|3.0|0.0|1|0|0.1.0|s|R
+Kendra Page Neighborhood Park|2203 Blue Meadow Dr 78744|30.1809|-97.7645|0.0|0.0|0|1|0.0.0||
+Little Stacy Neighborhood Park|1401 Sunset Ln 78704|30.2476|-97.7435|2.0|0.0|1|0|0.1.0|ts|
+Little Zilker Neighborhood Park|2016 Bluebonnet Ln 78704|30.2517|-97.7752|0.2|0.4|0|0|0.1.0|stp|
+Longview Neighborhood Park|7609 Longview Rd 78745|30.2029|-97.8265|0.0|0.0|1|0|0.1.0|s|
+Lott Pocket Park|908 Olive St 78702|30.2711|-97.7303|0.0|0.0|1|0|0.0.0||
+Mabel Davis District Park|3427 Parker Ln 78741|30.2205|-97.7410|0.0|0.0|2|0|0.0.0||
+Mary Frances Baylor Clarksville Pocket Park|1811 W 11th St 78703|30.2818|-97.7645|0.0|1.0|1|0|0.1.0|bs|
+Mary Moore Searight Metro Park|907 W Slaughter Ln 78748|30.1610|-97.8080|0.2|0.5|1|2n|1.1.0|s|
+Metz Neighborhood Park|2401 Canterbury St 78702|30.2516|-97.7189|1.0|0.0|1|0|0.0.0|tb|
+Montopolis Neighborhood Park|1200 Montopolis Dr 78741|30.2325|-97.7006|0.0|0.0|0|0|0.1.0|s|
+Mountain View Neighborhood Park|8900 Westerkirk Dr 78750|30.4298|-97.7903|0.2|0.4|1|0|0.1.0|s|
+North Lake Creek Neighborhood Park|9125 North Lake Creek Pkwy 78717|30.4863|-97.8000|0.1|0.1|1|0|0.0.0||
+Northwest Balcones Neighborhood Park|10225 Talleyran Dr 78750|30.4263|-97.8013|0.0|0.0|1|0|0.1.0|s|
+Northwest Recreation Center|2913 Northland Dr 78731|30.3334|-97.7510|0.0|0.0|0|1n|0.1.0|s|
+Oak View Neighborhood Park|10902 Oak View Dr 78759|30.4184|-97.7699|2.0|0.0|0|0|0.0.0||
+Odom School Park|1001 Sahara Ave 78745|30.2056|-97.7883|0.0|0.0|1|0|0.2.0|s|RY
+Onion Creek Soccer Complex|5600 E William Cannon Dr 78744|30.1763|-97.7405|0.0|0.0|0|0|10.0.0|s|RY
+Ortega School Park|5308 Chico St 78721|30.2699|-97.6832|0.0|0.0|1|0|0.1.0|s|RY
+Pan American Neighborhood Park|307 Chicon St 78702|30.2592|-97.7231|0.0|3.3|0|0|0.0.0|p|
+Parque Zaragoza Neighborhood Park|2611 Webberville Rd 78702|30.2622|-97.7109|0.0|0.1|1|1|0.0.0|pb|
+Pastor Edward Clarence Craig Jr. Neighborhood Park|4800 Copperbend Blvd 78744|30.1990|-97.7396|0.0|0.0|1|1|0.1.0|bs|
+Patterson Neighborhood Park|4200 Brookview Rd 78722|30.2967|-97.7103|1.1|0.2|0|0|0.1.0|tps|
+Pease District Park|1100 Kingsbury St 78703|30.2834|-97.7527|0.0|0.0|1|3|0.0.0|b|
+Perry Neighborhood Park|4800 Fairview Dr 78731|30.3310|-97.7609|2.0|0.0|1|0|1.1.0|ts|RY
+Pillow School Park|8500 Rockwood Ln 78757|30.3686|-97.7336|0.0|0.0|1|0|0.1.0|s|RY
+Ramsey Neighborhood Park|4201 Rosedale Ave 78756|30.3130|-97.7438|2.0|0.0|1|0|0.1.0|ts|
+Reed Neighborhood Park|2614 Pecos St 78703|30.3046|-97.7707|0.0|0.0|0|0|0.1.0|s|
+Reilly School Park|301 Denson Dr 78752|30.3273|-97.7196|0.0|0.0|1|0|0.1.0|s|RY
+Rialto Neighborhood Park|7025 Rialto Blvd 78735|30.2492|-97.8633|0.0|0.0|0|1n|0.0.0||
+Riata Neighborhood Park|12401 Riata Trace Pkwy 78727|30.4285|-97.7406|2.0|0.0|0|0|0.0.0|t|
+Rosewood Neighborhood Park|2300 Rosewood Ave 78702|30.2709|-97.7139|0.1|2.2|0|0|0.0.0|tp|
+Roy G. Guerrero Colorado River Metro Park|425 S Pleasant Valley Rd 78741|30.2464|-97.7095|0.0|0.0|0|4|0.3.0|vs|
+Scofield Farms Neighborhood Park|12901 Scofield Farms Dr 78727|30.4164|-97.6812|0.0|0.0|0|1|0.1.0|s|
+Shipe Neighborhood Park|4400 Avenue G 78751|30.3075|-97.7271|1.1|0.2|1|0|0.1.0|tps|
+Silk Oak Neighborhood Park|3204 Silk Oak Dr 78748|30.1870|-97.8390|0.0|0.0|0|1|0.0.0||
+South Austin Neighborhood Park|1200 Cumberland Rd 78704|30.2424|-97.7685|1.0|2.0|0|0|0.1.0|stp|
+South Austin Tennis Center|1008 Cumberland Rd 78704|30.2414|-97.7673|10.0|0.0|0|0|0.0.0|t|FY
+Springwoods Neighborhood Park|9207 Anderson Mill Rd 78729|30.4505|-97.7810|1.1|0.2|0|1n|0.1.0|s|
+St. Elmo School Park|4312 S 1st St 78745|30.2226|-97.7739|0.0|0.0|1|0|0.1.0|s|RY
+Stoney Ridge Neighborhood Park|7000 Moores Crossing Blvd 78617|30.1579|-97.6514|0.0|0.0|1|0|0.0.0||
+T.A. Brown Neighborhood Park|520 Northway Dr 78752|30.3442|-97.7100|0.0|0.0|1|0|0.0.0||R
+Tanglewood Neighborhood Park|11409 Rustic Rock Rd 78750|30.4316|-97.7811|0.0|0.0|1|1|0.0.0||
+Tarrytown Neighborhood Park|2106 Tower Dr 78703|30.2968|-97.7599|0.0|0.0|0|0|0.1.0|s|
+Tom Lasseter-South Lamar Neighborhood Park|3000 Del Curto Rd 78704|30.2421|-97.7788|0.0|0.0|1|0|0.0.0||
+Trailhead Neighborhood Park|10984 Boulder Ln 78726|30.4389|-97.8202|0.0|0.0|1|0|1.1.0|s|
+Volma Overton, Sr. Beach at Town Lake Metro Park|1206 W Cesar Chavez St 78703|30.2695|-97.7601|0.0|0.0|0|0|0.2.0|s|RY
+Walnut Creek Metro Park|12138 N Lamar Blvd 78758|30.4024|-97.6844|0.0|0.0|1|0|0.0.0||
+Walnut Creek Sports Park|7800 Johnny Morris Rd 78724|30.3128|-97.6381|11.8|0.8|0|0|0.0.0|tp|FY
+Walter E. Long Metro Park|6620 Blue Bluff Rd 78724|30.2826|-97.6091|0.0|0.0|0|2|0.0.0||F
+West Austin Neighborhood Park|1317 W 10th St 78703|30.2768|-97.7575|0.0|0.0|1|0|0.1.0|s|
+Williams School Park|605 Blue Valley Dr 78748|30.1811|-97.7927|0.0|0.0|0|0|0.1.0|s|RY
+Wooten Neighborhood Park|1500 Dale Dr 78757|30.3544|-97.7200|0.0|0.0|1|0|0.1.0|s|R
+Yates Pocket Park|6015 Felix Ave 78741|30.2362|-97.7002|0.0|0.0|0|1n|0.0.0||
+Zilker Metro Park|806 Azie Morton Rd 78704|30.2666|-97.7703|0.0|0.0|2|6|0.3.0|s|R
+`;
+const PARK_FIX={
+ "Austin High Tennis Center":{flags:"",hrs:{tennis:[...d(WK,17.5,22),...d([0,6],7,22)],pickleball:[...d(WK,17.5,22),...d([0,6],7,22)]},more:[["calendar","Shared with Austin High. Public play pauses for school events"]]},
+ "Pan American Neighborhood Park":{hrs:{pickleball:[...d([1,3,5],7,22),...d([2,4],7,19),...d([0,6],7,9)]}},
+ "South Austin Neighborhood Park":{hrs:{pickleball:d(ALL,8,22)}},
+ "Hancock Golf Course":{name:"Hancock Rec Center grounds",addSport:"pickleball",hrs:{pickleball:[...d(WK,7,14.5),...d(WK,18.5,20.5),...d([0,6],7,20.5)]},more:[["pickleball","2 pickleball courts on a shared court"],["doc","Pickleball hours are for the school year"]]},
+ "Roy G. Guerrero Colorado River Metro Park":{dropSport:"volleyball",more:[["alert","Krieg sand volleyball courts are closed through spring 2027"]]},
+ "Emma Long Metro Park":{feeText:"Park entrance fee"},
+ "Walter E. Long Metro Park":{feeText:"Park entrance fee"},
+};
+PARK_DATA.trim().split("\n").forEach(line=>{
+  const [nm,ad,lat,lon,tn,pk,bk,vb,sc,lit,fl]=line.split("|"),fix=PARK_FIX[nm]||{};
+  const [tD,tS]=tn.split(".").map(Number),[pD,pS]=pk.split(".").map(Number),[sF,sM,sP]=sc.split(".").map(Number),nb=+bk,nv=parseInt(vb)||0;
+  const pl=(n,one)=>n+" "+one+(n===1?"":(one.endsWith("h")?"es":"s")),sports=[],feats=[],flags=fix.flags!=null?fix.flags:(fl||"");
+  if(nb){sports.push("basketball");feats.push(["basketball",pl(nb,"basketball court")])}
+  if(tD+tS){sports.push("tennis");feats.push(["tennis",pl(tD+tS,"tennis court")+(tS&&pS?`, ${tS} shared with pickleball`:"")])}
+  if(pD+pS){sports.push("pickleball");feats.push(["pickleball",pl(pD+pS,"pickleball court")+(pS?(pD?`, ${pS} on shared courts`:" on shared courts"):"")])}
+  if(nv&&fix.dropSport!=="volleyball"){sports.push("volleyball");feats.push(["volleyball",pl(nv,"volleyball court")]);if(/n/.test(vb))feats.push(["net","Bring your own volleyball net"])}
+  if(sF+sM+sP){sports.push("soccer");if(sP)feats.push(["soccer",pl(sP,"soccer mini pitch")]);if(sF)feats.push(["soccer",pl(sF,"soccer field")]);if(sM)feats.push(["soccer",pl(sM,"multipurpose field")])}
+  if(fix.addSport&&!sports.includes(fix.addSport))sports.push(fix.addSport);
+  const litNames={t:"tennis",p:"pickleball",b:"basketball",v:"volleyball",s:"fields"},lits=[...(lit||"")].filter(c=>!(c==="v"&&fix.dropSport==="volleyball")).map(c=>litNames[c]);
+  if(lits.length)feats.push(["light","Lit: "+lits.join(", ")]);
+  if(/F/.test(flags))feats.push(["fee",fix.feeText||"Court fee applies. Hours are set by the center"]);else if(/f/.test(flags))feats.push(["fee","Some courts charge a fee"]);
+  if(/R/.test(flags))feats.push(["calendar","Shared site with restricted hours. Check the posted sign"]);
+  if(/Y/.test(flags))feats.push(["calendar","Can be reserved, so it may be taken"]);
+  (fix.more||[]).forEach(f=>feats.push(f));
+  if(!sports.length)return;
+  const id=nm.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+  VENUES.push({id,kind:"outdoor",name:fix.name||nm,addr:ad.replace(/ (\d{5})$/,", Austin, TX $1"),lat:+lat,lon:+lon,url:PARK_SRC,sports,hrs:fix.hrs||(pD+pS?{pickleball:d(ALL,7,22)}:null)});
+  FEATS[id]=feats});
 const VBY=Object.fromEntries(VENUES.map(v=>[v.id,v]));
 const PLACES=[["Downtown",30.2672,-97.7431],["East Riverside",30.2380,-97.7220],["South Congress",30.2470,-97.7505],["South Lamar",30.2440,-97.7810],
  ["Zilker",30.2640,-97.7700],["East Austin (Holly)",30.2560,-97.7240],["Montopolis",30.2320,-97.6990],["St. Elmo",30.2150,-97.7650],
