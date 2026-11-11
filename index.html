@@ -44,7 +44,6 @@
   .ball{width:54px;height:54px;flex:none}
   .mark{font:italic 800 56px/.82 var(--display);letter-spacing:-.5px;text-transform:uppercase;margin:0}
   .mark span{color:var(--accent)}
-  .tag{margin:8px 0 0;color:var(--band-muted);max-width:54ch}
   .clock{display:flex;align-items:center;gap:9px;font:italic 700 17px/1 var(--display);font-variant-numeric:tabular-nums;text-transform:uppercase;padding:9px 14px;border:2px solid var(--accent);border-radius:4px;background:#000;color:#fff}
   .beat{width:10px;height:10px;border-radius:50%;background:#3ddc84}
   .beat.off{background:#8d867e}
@@ -150,10 +149,9 @@
       <svg class="ball" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="27" fill="#ee6730" stroke="#17130f" stroke-width="3"/><path d="M3 30h54M30 3v54M10.5 11.5c9 8 9 29 0 37M49.5 11.5c-9 8-9 29 0 37" fill="none" stroke="#17130f" stroke-width="2.6" stroke-linecap="round"/></svg>
       <div>
       <p class="mark">Got <span>Next</span></p>
-      <p class="tag">Pick a sport and a distance. See which Austin courts are open to walk onto, and watch them flip the minute they close.</p>
       </div>
     </div>
-    <div class="clock" title="All times are Austin time"><span class="beat" id="beat"></span><span id="clock">Austin time</span></div>
+    <div class="clock" title="All times are Central time"><span class="beat" id="beat"></span><span id="clock">CST</span></div>
   </header>
 
   <section class="controls" aria-label="Search">
@@ -310,6 +308,8 @@ function s(tag,attrs,...kids){const e=document.createElementNS("http://www.w3.or
 
 /* ---------- time (always Austin) ---------- */
 const partsFmt=new Intl.DateTimeFormat("en-US",{timeZone:"America/Chicago",weekday:"short",hour:"2-digit",minute:"2-digit",hourCycle:"h23"});
+const zoneFmt=new Intl.DateTimeFormat("en-US",{timeZone:"America/Chicago",timeZoneName:"short"});
+const zone=ms=>(zoneFmt.formatToParts(new Date(ms)).find(x=>x.type==="timeZoneName")||{value:"CST"}).value; // CST in winter, CDT in summer
 const dateFmt=new Intl.DateTimeFormat("en-US",{timeZone:"America/Chicago",month:"short",day:"numeric"});
 function austin(ms){const p={};partsFmt.formatToParts(new Date(ms)).forEach(x=>p[x.type]=x.value);return{day:DAYS.indexOf(p.weekday),mins:(+p.hour%24)*60+(+p.minute)}}
 function fmt(m){let hh=Math.floor(m/60)%24,mm=m%60;const ap=hh>=12?"p":"a";hh=hh%12||12;return hh+(mm?":"+String(mm).padStart(2,"0"):"")+ap}
@@ -545,7 +545,7 @@ function start(saved){
   if(MAP_OK)$("locNote").textContent="Distances are straight lines from your starting point. Use my location reads your position in this browser and keeps it there. The street map loads its tiles from OpenStreetMap.";
   syncControls();initMap();render();tick();setInterval(tick,15000);connect();
   document.addEventListener("focusout",()=>setTimeout(()=>{if(dirty)render(true)},50))}
-function tick(){const n=austin(Date.now());$("clock").textContent=`${DAYS[n.day]} ${fmt(n.mins)} Austin time`;
+function tick(){const n=austin(Date.now());$("clock").textContent=`${DAYS[n.day]} ${fmt(n.mins)} ${zone(Date.now())}`;
   const{T,rows}=compute();if(sig(rows,T)!==lastSig)render(true);else renderBoard(T)}
 if(window.claude&&window.claude.hot){window.claude.hot.snapshot(()=>state);window.claude.hot.ready?window.claude.hot.ready(start):start(window.claude.hot.data||{})}else start({});
 </script>
