@@ -6,6 +6,7 @@
 <title>Got Next Austin</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 <style>
   /* Layout idea: a painted-court radar on the left that plots every match by true bearing and distance, a live status list on the right. */
   :root{
@@ -62,7 +63,7 @@
 
   .main{display:grid;grid-template-columns:minmax(300px,420px) 1fr;gap:20px;align-items:start}
   .radar{position:sticky;top:14px;display:flex;flex-direction:column;gap:10px}
-  .radar svg{width:100%;height:auto;display:block;border-radius:16px}
+  #radar{width:100%;height:auto;display:block;border-radius:16px}
   .legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--muted)}
   .legend i{display:inline-block;width:11px;height:11px;margin-right:5px;vertical-align:-1px}
   .dot{cursor:pointer}
@@ -115,6 +116,16 @@
   .toast{background:var(--ink);color:var(--bg);border-radius:10px;padding:10px 12px;display:flex;gap:10px;align-items:flex-start;box-shadow:0 6px 24px rgba(0,0,0,.25);border-left:5px solid var(--t,var(--accent));font-size:14px}
   .toast button{border:0;background:transparent;color:inherit;font-weight:700;cursor:pointer;padding:0 2px}
 
+  [hidden]{display:none!important}
+  #view{align-self:flex-start}
+  #map{height:400px;border-radius:16px;border:1px solid var(--line);z-index:0;background:var(--surface)}
+  .pin{width:26px;height:26px;display:grid;place-items:center;font:700 12px var(--body);color:#13201a;border:2px solid #fff;border-radius:50%;box-shadow:0 1px 5px rgba(0,0,0,.45);cursor:pointer}
+  .pin.out{border-radius:5px;transform:rotate(45deg) scale(.88)} .pin.out span{transform:rotate(-45deg)}
+  .pin.open,.pin.soon{background:#d9f23c} .pin.later{background:#fff} .pin.closed{background:#2a62a3;color:#fff} .pin.reported{background:#bd3327;color:#fff}
+  .pin.start{width:22px;height:22px;background:#13201a;box-shadow:0 0 0 3px rgba(19,32,26,.25),0 1px 5px rgba(0,0,0,.45);cursor:grab}
+  .fromrow{display:flex;gap:6px;flex-wrap:wrap}
+  .fromrow .btn{min-height:38px}
+
   @media (max-width:860px){
     .main{grid-template-columns:1fr}
     .radar{position:static;max-width:440px;width:100%;margin:0 auto}
@@ -146,7 +157,7 @@
       <div class="field"><label class="lab" for="radius">Radius</label>
         <div class="radius"><input type="range" id="radius" min="1" max="15" step="1"><output id="radiusOut" for="radius">5 mi</output></div>
       </div>
-      <div class="field"><label class="lab" for="from">Starting from</label><select id="from"></select></div>
+      <div class="field"><label class="lab" for="from">Starting from</label><div class="fromrow"><select id="from"></select><button type="button" class="btn" id="locate" hidden>Use my location</button></div></div>
       <div class="field"><label class="lab" for="when">When</label>
         <div style="display:flex;gap:6px;flex-wrap:wrap">
           <select id="when"><option value="now">Right now (live)</option><option value="pick">Pick a day and time</option></select>
@@ -160,6 +171,11 @@
 
   <div class="main">
     <aside class="radar" aria-label="Map of matches">
+      <div class="seg" id="view" role="group" aria-label="Map style" hidden>
+        <button type="button" data-v="map">Street map</button><button type="button" data-v="radar">Radar</button>
+      </div>
+      <div id="map" hidden></div>
+      <p class="hint" id="mapHint" hidden>Drag the dark pin to move your starting point. Tap a numbered pin to jump to its card.</p>
       <svg id="radar" viewBox="-120 -120 240 240" role="img" aria-label="Matches plotted by direction and distance from your starting point"></svg>
       <div class="legend">
         <span><i style="background:var(--ball);border-radius:50%"></i>Open</span>
@@ -185,12 +201,13 @@
   <section class="about">
     <h2>About the data</h2>
     <p>Indoor times are the free open play hours each City of Austin recreation center posted on its gym schedule, collected November 11, 2026. Outdoor courts are first come, first served during city park hours, 5 a.m. to 10 p.m.</p>
-    <p>Distances are straight lines from the middle of the neighborhood you pick. Pages like this one can't read your device location, so choose the closest neighborhood.</p>
+    <p id="locNote">Distances are straight lines from the middle of the neighborhood you pick. Pages like this one can't read your device location, so choose the closest neighborhood.</p>
     <p>The city changes gym schedules without notice. Cards marked as possibly outdated are worth a phone call first.</p>
   </section>
 </div>
 <div class="toasts" id="toasts" aria-live="assertive"></div>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script>
 /* ---------- catalog ---------- */
 const DAYS=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
@@ -261,7 +278,12 @@ const REASONS={maintenance:"Maintenance",event:"Private event or rental",league:
 const PARK=[300,1320];
 
 /* ---------- state ---------- */
-let state={sport:"basketball",env:"both",radius:5,from:0,openOnly:false,when:"now",day:6,time:1080};
+let state={sport:"basketball",env:"both",radius:5,from:0,openOnly:false,when:"now",day:6,time:1080,view:"map"};
+// The street map and device location need a normal web host. Inside a Claude artifact both are blocked, so the radar stays.
+const IN_ARTIFACT=!!(window.claude&&window.claude.use), MAP_OK=!!window.L&&!IN_ARTIFACT;
+let map=null,pins=null,ring=null,startMk=null,viewKey="",lastRows=[],drawing=false;
+const view=()=>MAP_OK&&state.view!=="radar"?"map":"radar";
+function origin(){if(state.from<0&&state.custom)return state.custom;const p=PLACES[state.from]||PLACES[0];return{lat:p[1],lon:p[2],label:p[0],phrase:p[0]}}
 // Known city notice, used until the live store answers (and on hosts without one).
 let closures={panam:{reason:"maintenance",note:"City notice: gym and weight room closed, open play and leagues suspended.",at:1791565200000,until:null}}, prev=null, dirty=false, lastSig="";
 const ui={report:null,draft:{reason:"maintenance",dur:"today",note:""},week:new Set(),busy:false,msg:""};
@@ -284,7 +306,7 @@ function target(){const nowMs=Date.now(),n=austin(nowMs);if(state.when==="now")r
   const ahead=(state.day-n.day+7)%7;return{day:state.day,mins:state.time,ms:nowMs+ahead*864e5+(state.time-n.mins)*6e4,live:false}}
 
 /* ---------- geometry ---------- */
-function offset(v){const o=PLACES[state.from];const dy=(v.lat-o[1])*69.05,dx=(v.lon-o[2])*69.17*Math.cos(o[1]*Math.PI/180);return{dx,dy,dist:Math.hypot(dx,dy)}}
+function offset(v){const o=origin();const dy=(v.lat-o.lat)*69.05,dx=(v.lon-o.lon)*69.17*Math.cos(o.lat*Math.PI/180);return{dx,dy,dist:Math.hypot(dx,dy)}}
 function compass(dx,dy){const a=(Math.atan2(dx,dy)*180/Math.PI+360)%360;return["N","NE","E","SE","S","SW","W","NW"][Math.round(a/45)%8]}
 
 /* ---------- status ---------- */
@@ -317,7 +339,7 @@ function compute(){const T=target();
 function render(soft){
   if(soft&&ui.report&&$("list").contains(document.activeElement)){dirty=true;return}
   dirty=false;const{T,rows,all}=compute();
-  const sportName=SPORTS.find(x=>x[0]===state.sport)[1].toLowerCase(),place=PLACES[state.from][0];
+  const sportName=SPORTS.find(x=>x[0]===state.sport)[1].toLowerCase(),place=origin().phrase;
   const nOpen=rows.filter(r=>r.st.state==="open"||r.st.state==="soon").length;
   const head=$("headline");head.textContent="";
   head.append(h("b",null,String(nOpen)),` ${nOpen===1?"spot":"spots"} open for ${sportName} `,T.live?"right now":`${DAYS[T.day]} at ${fmt(T.mins)}`);
@@ -332,7 +354,7 @@ function render(soft){
     else if(state.env!=="both")box.append(h("button",{class:"btn solid",type:"button",onclick:()=>set({env:"both"})},"Search indoor and outdoor"));
     list.append(box)}
   rows.forEach((r,i)=>list.append(card(r,i+1,T)));
-  drawRadar(rows);renderBoard(T);
+  drawRadar(rows);drawMap(rows);renderBoard(T);
   lastSig=sig(rows,T);
   if(T.live){const now={};rows.forEach(r=>now[r.v.id]=r.st.state);
     if(prev)for(const id in now){const a=prev[id],b=now[id];if(!a)continue;
@@ -356,7 +378,7 @@ function card({v,o,st},n,T){
   if(v.stale)el.append(h("p",{class:"note flag"},"Possibly outdated. ",v.stale));
   const acts=h("div",{class:"acts"});
   if(v.phone)acts.append(h("span",null,"Call "+v.phone));
-  acts.append(h("a",{href:"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(v.addr),target:"_blank",rel:"noopener"},"Directions"),
+  acts.append(h("a",{href:"https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(v.name+", "+v.addr),target:"_blank",rel:"noopener"},"Directions"),
               h("a",{href:v.url,target:"_blank",rel:"noopener"},"Source"));
   if(live.db&&live.canWrite!==false){
     if(st.state==="reported")acts.append(h("button",{class:"btn",type:"button",disabled:ui.busy,onclick:()=>reopen(v.id)},"Mark as open again"));
@@ -401,6 +423,35 @@ function drawRadar(rows){const svg=$("radar");svg.textContent="";const R=state.r
       onclick:()=>jump(r.v.id),onkeydown:e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();jump(r.v.id)}}},
       on?s("circle",{class:"pulse",r:7.5,fill:"none",stroke:"var(--ball)","stroke-width":1.5}):null,shape,s("text",{fill:ink},String(n)));
     svg.append(g)})}
+/* ---------- street map (Leaflet + OpenStreetMap) ---------- */
+function initMap(){if(!MAP_OK)return;$("map").hidden=false;const o=origin();
+  map=L.map("map",{scrollWheelZoom:false}).setView([o.lat,o.lon],12);
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}).addTo(map);
+  ring=L.circle([o.lat,o.lon],{radius:state.radius*1609.34,color:"#1d5ea8",weight:2,dashArray:"6 6",fillColor:"#1d5ea8",fillOpacity:.06,interactive:false}).addTo(map);
+  pins=L.layerGroup().addTo(map);
+  startMk=L.marker([o.lat,o.lon],{draggable:true,zIndexOffset:1000,title:"Drag to move your starting point",
+    icon:L.divIcon({className:"",html:'<div class="pin start"></div>',iconSize:[22,22],iconAnchor:[11,11]})}).addTo(map);
+  startMk.on("dragend",()=>{const ll=startMk.getLatLng();setCustom(ll.lat,ll.lng,"Dropped pin","your pin")});
+  map.on("zoomend",()=>drawMap(lastRows))}
+function drawMap(rows){lastRows=rows;if(!map||drawing||view()!=="map")return;drawing=true;const o=origin();
+  ring.setLatLng([o.lat,o.lon]);ring.setRadius(state.radius*1609.34);startMk.setLatLng([o.lat,o.lon]);
+  const key=[o.lat,o.lon,state.radius].join();
+  if(key!==viewKey){viewKey=key;map.fitBounds(ring.getBounds(),{padding:[6,6],animate:false})}
+  pins.clearLayers();const T=target(),placed=[];
+  rows.forEach((r,i)=>{const p=map.latLngToContainerPoint([r.v.lat,r.v.lon]);let dx=0,n=0;
+    while(placed.some(q=>Math.hypot(q[0]-(p.x+dx),q[1]-p.y)<24)&&n++<6)dx+=26;placed.push([p.x+dx,p.y]);
+    const tip=document.createElement("span");tip.textContent=`${i+1}. ${r.v.name} · ${pillText(r.st,T)}`;
+    L.marker([r.v.lat,r.v.lon],{zIndexOffset:500-i*10,alt:`${i+1}. ${r.v.name}`,
+      icon:L.divIcon({className:"",html:`<div class="pin ${r.v.kind==="outdoor"?"out":"in"} ${r.st.state}"><span>${i+1}</span></div>`,iconSize:[26,26],iconAnchor:[13-dx,13]})})
+      .bindTooltip(tip,{direction:"top",offset:[dx,-12]}).on("click",()=>jump(r.v.id)).addTo(pins)});
+  drawing=false}
+function setCustom(lat,lon,label,phrase){state.custom={lat,lon,label,phrase};set({from:-1})}
+function locate(){const b=$("locate"),done=()=>{b.disabled=false;b.textContent="Use my location"};b.disabled=true;b.textContent="Finding you";
+  navigator.geolocation.getCurrentPosition(pos=>{done();const lat=pos.coords.latitude,lon=pos.coords.longitude;
+    if(Math.hypot((lat-30.2672)*69.05,(lon+97.7431)*59.7)>40){toast("You look to be outside the Austin area, which is all this tool covers. Pick a neighborhood to browse it.","warn");return}
+    setCustom(lat,lon,"My location","your location")},
+   ()=>{done();toast("Couldn't read your location. Allow location access in your browser, or drag the dark pin on the map.","warn")},
+   {enableHighAccuracy:false,timeout:10000,maximumAge:300000})}
 function jump(id){const c=$("card-"+id);if(!c)return;c.scrollIntoView({behavior:"smooth",block:"center"});c.classList.add("flash");setTimeout(()=>c.classList.remove("flash"),1400)}
 
 function renderBoard(T){T=T||target();const ul=$("board");ul.textContent="";
@@ -450,11 +501,15 @@ async function reopen(id){if(ui.busy||!live.db)return;ui.busy=true;render();
   ui.busy=false;render()}
 
 /* ---------- controls ---------- */
-function save(){try{localStorage.setItem("gotnext-v1",JSON.stringify(state))}catch(e){}}
+function save(){try{const s={...state};delete s.custom;if(s.from<0)s.from=0;localStorage.setItem("gotnext-v1",JSON.stringify(s))}catch(e){}}
 function set(patch){Object.assign(state,patch);prev=null;save();syncControls();render()}
 function syncControls(){
   document.querySelectorAll("#sports .chip").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.v===state.sport)));
   document.querySelectorAll("#env button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.v===state.env)));
+  let own=$("from").querySelector('option[value="-1"]');
+  if(state.custom){if(!own){own=h("option",{value:-1});$("from").prepend(own)}own.textContent=state.custom.label}else if(own)own.remove();
+  const vw=view();$("view").hidden=!MAP_OK;$("map").hidden=$("mapHint").hidden=vw!=="map";$("radar").style.display=vw==="map"?"none":"";
+  document.querySelectorAll("#view button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.v===vw)));
   $("radius").value=state.radius;$("radiusOut").textContent=state.radius+" mi";$("from").value=state.from;$("openOnly").checked=state.openOnly;
   $("when").value=state.when;$("whenDay").hidden=$("whenTime").hidden=state.when==="now";$("whenDay").value=state.day;
   $("whenTime").value=String(Math.floor(state.time/60)).padStart(2,"0")+":"+String(state.time%60).padStart(2,"0")}
@@ -462,7 +517,7 @@ function start(saved){
   try{Object.assign(state,JSON.parse(localStorage.getItem("gotnext-v1")||"{}"))}catch(e){}
   if(saved&&saved.sport)Object.assign(state,saved);
   if(!SPORTS.some(x=>x[0]===state.sport))state.sport="basketball";
-  if(!PLACES[state.from])state.from=0;state.radius=Math.min(15,Math.max(1,+state.radius||5));
+  if(!(state.from<0&&state.custom)&&!PLACES[state.from])state.from=0;state.radius=Math.min(15,Math.max(1,+state.radius||5));
   SPORTS.forEach(([v,t])=>$("sports").append(h("button",{class:"chip",type:"button","data-v":v,onclick:()=>set({sport:v})},t)));
   PLACES.forEach((p,i)=>$("from").append(h("option",{value:i},p[0])));
   DAYS.forEach((dn,i)=>$("whenDay").append(h("option",{value:i},dn)));
@@ -473,7 +528,10 @@ function start(saved){
   $("when").onchange=e=>set({when:e.target.value});
   $("whenDay").onchange=e=>set({day:+e.target.value});
   $("whenTime").onchange=e=>{const[a,b]=(e.target.value||"18:00").split(":").map(Number);set({time:a*60+b})};
-  syncControls();render();tick();setInterval(tick,15000);connect();
+  document.querySelectorAll("#view button").forEach(b=>b.onclick=()=>{state.view=b.dataset.v;save();syncControls();if(map&&view()==="map"){map.invalidateSize();viewKey="";drawMap(lastRows)}});
+  if(!IN_ARTIFACT&&"geolocation" in navigator){$("locate").hidden=false;$("locate").onclick=locate}
+  if(MAP_OK)$("locNote").textContent="Distances are straight lines from your starting point. Use my location reads your position in this browser and keeps it there. The street map loads its tiles from OpenStreetMap.";
+  syncControls();initMap();render();tick();setInterval(tick,15000);connect();
   document.addEventListener("focusout",()=>setTimeout(()=>{if(dirty)render(true)},50))}
 function tick(){const n=austin(Date.now());$("clock").textContent=`${DAYS[n.day]} ${fmt(n.mins)} Austin time`;
   const{T,rows}=compute();if(sig(rows,T)!==lastSig)render(true);else renderBoard(T)}

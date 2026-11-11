@@ -7,7 +7,9 @@ Pick a sport and a distance, and see which Austin courts are open to walk onto r
 - Six sports: basketball, pickleball, volleyball, badminton, tennis and futsal
 - Indoor, Outdoor or Both
 - A 1 to 15 mile radius from one of 16 Austin neighborhoods
-- A court-style map that plots each match by direction and distance
+- A street map (Leaflet and OpenStreetMap, no API key) with numbered pins colored by status, plus a court-style radar view
+- "Use my location", or drag the start pin, to measure from where you are
+- Directions links that open Google Maps with the venue as the destination
 - Status that follows the clock in Austin time: cards flip to closed when a session ends, with an alert 30 minutes before
 - A "Pick a day and time" mode for planning ahead
 
