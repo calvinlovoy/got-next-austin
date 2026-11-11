@@ -295,7 +295,7 @@ const VENUES=[
   note:"Basketball and tennis courts in Southwest Austin.",sports:["basketball","tennis"]},
 ];
 const VBY=Object.fromEntries(VENUES.map(v=>[v.id,v]));
-const PLACES=[["East Riverside",30.2380,-97.7220],["Downtown",30.2672,-97.7431],["South Congress",30.2470,-97.7505],["South Lamar",30.2440,-97.7810],
+const PLACES=[["Downtown",30.2672,-97.7431],["East Riverside",30.2380,-97.7220],["South Congress",30.2470,-97.7505],["South Lamar",30.2440,-97.7810],
  ["Zilker",30.2640,-97.7700],["East Austin (Holly)",30.2560,-97.7240],["Montopolis",30.2320,-97.6990],["St. Elmo",30.2150,-97.7650],
  ["Dove Springs",30.1900,-97.7400],["Far South (Slaughter Ln)",30.1700,-97.8050],["Oak Hill",30.2350,-97.8600],["UT campus",30.2850,-97.7350],
  ["Hyde Park",30.3050,-97.7290],["Mueller",30.2985,-97.7050],["North Lamar and Rundberg",30.3600,-97.6950],["The Domain",30.4020,-97.7250]];
@@ -525,7 +525,7 @@ async function reopen(id){if(ui.busy||!live.db)return;ui.busy=true;render();
   ui.busy=false;render()}
 
 /* ---------- controls ---------- */
-function save(){try{const s={...state};delete s.custom;if(s.from<0)s.from=0;localStorage.setItem("gotnext-v1",JSON.stringify(s))}catch(e){}}
+function save(){try{const s={...state};delete s.custom;if(s.from<0)s.from=0;localStorage.setItem("gotnext-v2",JSON.stringify(s))}catch(e){}}
 function set(patch){Object.assign(state,patch);prev=null;save();syncControls();render()}
 function syncControls(){
   document.querySelectorAll("#sports .chip").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.v===state.sport)));
@@ -538,7 +538,9 @@ function syncControls(){
   $("when").value=state.when;$("whenDay").hidden=$("whenTime").hidden=state.when==="now";$("whenDay").value=state.day;
   $("whenTime").value=String(Math.floor(state.time/60)).padStart(2,"0")+":"+String(state.time%60).padStart(2,"0")}
 function start(saved){
-  try{Object.assign(state,JSON.parse(localStorage.getItem("gotnext-v1")||"{}"))}catch(e){}
+  try{const old=JSON.parse(localStorage.getItem("gotnext-v1")||"null"); // saved before Downtown moved to the top: swap the first two places
+    if(old){old.from=old.from===0?1:old.from===1?0:old.from;Object.assign(state,old);localStorage.removeItem("gotnext-v1");save()}
+    Object.assign(state,JSON.parse(localStorage.getItem("gotnext-v2")||"{}"))}catch(e){}
   if(saved&&saved.sport)Object.assign(state,saved);
   if(!SPORTS.some(x=>x[0]===state.sport))state.sport="basketball";
   if(!(state.from<0&&state.custom)&&!PLACES[state.from])state.from=0;state.radius=Math.min(15,Math.max(1,+state.radius||5));
