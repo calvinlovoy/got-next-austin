@@ -122,7 +122,7 @@
   .board{background:var(--band);color:var(--band-ink);border-radius:6px;padding:14px 18px;border-left:7px solid var(--accent)}
   .board .hint{color:var(--band-muted)}
   h2{font:italic 800 25px/1 var(--display);text-transform:uppercase;margin:0 0 8px}
-  .board ul{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+  .board ul{list-style:none;margin:4px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
   .board li{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;font-size:14.5px}
   .tick{font:italic 700 13px/1 var(--display);letter-spacing:.5px;text-transform:uppercase}
   .tick.bad{color:#ff7166} .tick.warn{color:#ffd04a}
@@ -208,14 +208,12 @@
 
   <section class="board" aria-label="Live board">
     <h2>Live board</h2>
-    <p class="hint" id="liveState">Connecting to live reports.</p>
     <ul id="board"></ul>
   </section>
 
   <section class="about">
-    <h2>About the data</h2>
+    <h2>About</h2>
     <p>Indoor times are the free open play hours each City of Austin recreation center posted on its gym schedule, collected November 11, 2026. Outdoor courts are first come, first served during city park hours, 5 a.m. to 10 p.m.</p>
-    <p id="locNote">Distances are straight lines from the middle of the neighborhood you pick. Pages like this one can't read your device location, so choose the closest neighborhood.</p>
     <p>The city changes gym schedules without notice. Cards marked as possibly outdated are worth a phone call first.</p>
   </section>
 </div>
@@ -471,10 +469,7 @@ function locate(){const b=$("locate"),done=()=>{b.disabled=false;b.textContent="
 function jump(id){const c=$("card-"+id);if(!c)return;c.scrollIntoView({behavior:"smooth",block:"center"});c.classList.add("flash");setTimeout(()=>c.classList.remove("flash"),1400)}
 
 function renderBoard(T){T=T||target();const ul=$("board");ul.textContent="";
-  const msg={connecting:"Connecting to live reports.",slow:"Live reports can't be reached yet. Posted schedules still update by the clock.",
-    off:"Shared live reports are off in this view. Posted schedules and known city notices still update by the clock.",
-    on:live.canWrite===false?"Live. You'll see closures the moment someone posts one. Posting needs Contributor access to this page.":"Live. Closures posted by anyone using this page show up here within seconds."}[live.status];
-  $("liveState").textContent=msg;$("beat").className="beat"+(live.status==="on"?"":" off");
+  $("beat").className="beat"+(live.status==="on"?"":" off");
   const now=Date.now();
   Object.entries(closures).filter(([id,c])=>VBY[id]&&(c.until==null||c.until>now)).sort((a,b)=>b[1].at-a[1].at).forEach(([id,c])=>
     ul.append(h("li",null,h("span",{class:"tick bad"},"Closed"),h("strong",null,VBY[id].name),h("span",null,`${REASONS[c.reason]||"Closed"}, posted ${stamp(c.at)}, ${c.until==null?"until further notice":"through "+stamp(c.until)}.`+(c.note?" "+c.note:"")))));
@@ -546,7 +541,6 @@ function start(saved){
   $("whenTime").onchange=e=>{const[a,b]=(e.target.value||"18:00").split(":").map(Number);set({time:a*60+b})};
   document.querySelectorAll("#view button").forEach(b=>b.onclick=()=>{state.view=b.dataset.v;save();syncControls();if(map&&view()==="map"){map.invalidateSize();viewKey="";drawMap(lastRows)}});
   if(!IN_ARTIFACT&&"geolocation" in navigator){$("locate").hidden=false;$("locate").onclick=locate}
-  if(MAP_OK)$("locNote").textContent="Distances are straight lines from your starting point. Use my location reads your position in this browser and keeps it there. The street map loads its tiles from OpenStreetMap.";
   syncControls();initMap();render();tick();setInterval(tick,15000);connect();
   document.addEventListener("focusout",()=>setTimeout(()=>{if(dirty)render(true)},50))}
 function tick(){const n=austin(Date.now());$("clock").textContent=`${DAYS[n.day]} ${fmt(n.mins)} ${zone(Date.now())}`;
