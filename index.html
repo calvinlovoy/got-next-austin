@@ -75,8 +75,14 @@
   #radar{width:100%;height:auto;display:block;border-radius:6px}
   #view{align-self:flex-start;margin-left:4px}
   #map{height:400px;border-radius:6px;border:2px solid var(--ink);z-index:0;background:var(--surface)}
-  .legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13.5px;color:var(--muted)}
-  .legend i{display:inline-block;width:12px;height:12px;margin-right:5px;vertical-align:-1px;border-radius:50%;border:1.5px solid #17130f}
+  .legend{display:flex;flex-direction:column;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:10px 12px;font-size:13.5px;font-weight:600}
+  .lrow{position:relative;padding-left:68px;display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center}
+  .lrow .lab{position:absolute;left:0;top:4px}
+  .legend i{display:inline-block;width:12px;height:12px;margin-right:6px;vertical-align:-1px;border-radius:50%;border:1.5px solid #17130f}
+  .legend i.shape{background:transparent;border:2px solid var(--ink)}
+  .legend i.dia{border-radius:2px;transform:rotate(45deg) scale(.86)}
+  .legend i.start{background:#17130f;border-color:#fff;box-shadow:0 0 0 2px #ee6730}
+  .legend .north{width:12px;height:12px;margin-right:5px;vertical-align:-1px}
   .dot{cursor:pointer}
   .dot text{font:700 8px var(--body);text-anchor:middle;dominant-baseline:central;pointer-events:none}
   .pulse{transform-box:fill-box;transform-origin:center;animation:pulse 2.2s ease-out infinite}
@@ -191,12 +197,19 @@
       <div id="map" hidden></div>
       <p class="hint" id="mapHint" hidden>Drag the dark pin to move your starting point. Tap a numbered pin to jump to its card.</p>
       <svg id="radar" viewBox="-120 -120 240 240" role="img" aria-label="Matches plotted by direction and distance from your starting point"></svg>
-      <div class="legend">
-        <span><i style="background:#ee6730"></i>Open</span>
-        <span><i style="background:#fff"></i>Opens later today</span>
-        <span><i style="background:#8b8d91"></i>Not today</span>
-        <span><i style="background:#17130f;border-color:#e0281b"></i>Reported closed</span>
-        <span>Circle is indoor, diamond is outdoor. North is up.</span>
+      <div class="legend" role="group" aria-label="Map legend">
+        <div class="lrow"><span class="lab">Status</span>
+          <span><i style="background:#ee6730"></i>Open</span>
+          <span><i style="background:#fff"></i>Opens later today</span>
+          <span><i style="background:#8b8d91"></i>Not today</span>
+          <span><i style="background:#17130f;border-color:#e0281b"></i>Reported closed</span>
+        </div>
+        <div class="lrow"><span class="lab">Marker</span>
+          <span><i class="shape"></i>Indoor gym</span>
+          <span><i class="shape dia"></i>Outdoor court</span>
+          <span><i class="start"></i>Your start</span>
+          <span><svg class="north" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 .8l4.200 10.400L6 8.700l-4.200 2.500z" fill="currentColor"/></svg>North</span>
+        </div>
       </div>
     </aside>
     <section aria-live="polite">
