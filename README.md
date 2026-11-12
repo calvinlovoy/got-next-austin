@@ -4,7 +4,7 @@ Pick a sport and a distance, and see which Austin courts are open to walk onto r
 
 **What it does**
 
-- Six sports: basketball, pickleball, volleyball, badminton, tennis and soccer
+- Six sports: basketball, pickleball, tennis, soccer, volleyball and badminton
 - Indoor, Outdoor or Both
 - A 1 to 15 mile radius from one of 16 Austin neighborhoods
 - A street map (Leaflet and OpenStreetMap, no API key) with numbered pins colored by status and a compass

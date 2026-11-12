@@ -241,7 +241,7 @@
 <script>
 /* ---------- catalog ---------- */
 const DAYS=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-const SPORTS=[["basketball","Basketball"],["pickleball","Pickleball"],["volleyball","Volleyball"],["badminton","Badminton"],["tennis","Tennis"],["soccer","Soccer"]];
+const SPORTS=[["basketball","Basketball"],["pickleball","Pickleball"],["tennis","Tennis"],["soccer","Soccer"],["volleyball","Volleyball"],["badminton","Badminton"]];
 // d(days, startHour, endHour, label): decimal hours, 0 = Sunday
 const d=(days,s,e,label)=>[].concat(days).map(x=>[x,Math.round(s*60),Math.round(e*60),label||""]);
 const WK=[1,2,3,4,5],ALL=[0,1,2,3,4,5,6];
