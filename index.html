@@ -516,7 +516,7 @@ function pillText(st,T){
   return st.nextDay==null?"Nothing posted":"Next: "+(st.tomorrow?"tomorrow":DAYS[st.nextDay])+" "+fmt(st.at)}
 const RANK={open:0,soon:1,later:2,closed:3,reported:4};
 
-const SORT_LABELS=[["open","Open first"],["near","Nearest"],["late","Closes latest"],["name","A to Z"]];
+const SORT_LABELS=[["near","Nearest"],["open","Open first"],["late","Closes latest"],["name","A to Z"]];
 const lateKey=r=>r.st.state==="open"||r.st.state==="soon"?10000+r.st.until:r.st.state==="later"?5000-r.st.at:r.st.state==="closed"?1000:0;
 const SORTS={open:(a,b)=>RANK[a.st.state]-RANK[b.st.state]||a.o.dist-b.o.dist,near:(a,b)=>a.o.dist-b.o.dist,
   late:(a,b)=>lateKey(b)-lateKey(a)||a.o.dist-b.o.dist,name:(a,b)=>a.v.name.localeCompare(b.v.name)};
