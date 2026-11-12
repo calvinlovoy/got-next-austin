@@ -484,7 +484,7 @@ const zoneFmt=new Intl.DateTimeFormat("en-US",{timeZone:"America/Chicago",timeZo
 const zone=ms=>(zoneFmt.formatToParts(new Date(ms)).find(x=>x.type==="timeZoneName")||{value:"CST"}).value; // CST in winter, CDT in summer
 const dateFmt=new Intl.DateTimeFormat("en-US",{timeZone:"America/Chicago",month:"short",day:"numeric"});
 function austin(ms){const p={};partsFmt.formatToParts(new Date(ms)).forEach(x=>p[x.type]=x.value);return{day:DAYS.indexOf(p.weekday),mins:(+p.hour%24)*60+(+p.minute)}}
-function fmt(m){let hh=Math.floor(m/60)%24,mm=m%60;const ap=hh>=12?"p":"a";hh=hh%12||12;return hh+(mm?":"+String(mm).padStart(2,"0"):"")+ap}
+function fmt(m){let hh=Math.floor(m/60)%24,mm=m%60;const ap=hh>=12?"pm":"am";hh=hh%12||12;return hh+(mm?":"+String(mm).padStart(2,"0"):"")+ap}
 function stamp(ms){const n=Date.now();return dateFmt.format(new Date(ms))===dateFmt.format(new Date(n))?"today at "+fmt(austin(ms).mins):dateFmt.format(new Date(ms))}
 function target(){const nowMs=Date.now(),n=austin(nowMs);if(state.when==="now")return{...n,ms:nowMs,live:true};
   const ahead=(state.day-n.day+7)%7;return{day:state.day,mins:state.time,ms:nowMs+ahead*864e5+(state.time-n.mins)*6e4,live:false}}
