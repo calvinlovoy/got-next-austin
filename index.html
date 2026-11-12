@@ -55,6 +55,8 @@
   .lab{font:700 12.5px/1 var(--body);letter-spacing:1.6px;text-transform:uppercase;color:var(--muted)}
   .chips{display:flex;flex-wrap:wrap;gap:8px}
   .chip{border:2px solid var(--ink);background:transparent;border-radius:3px;padding:6px 15px;font:italic 700 15px/1.2 var(--display);text-transform:uppercase;cursor:pointer;transform:skewX(-8deg)}
+  #sports .chip{display:inline-flex;align-items:center;gap:7px;padding-left:12px}
+  #sports .chip .ic{color:inherit;transform:skewX(8deg)}
   .chip:hover{background:color-mix(in srgb,var(--accent) 18%,transparent)}
   .chip[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
   .seg{display:inline-flex;border:2px solid var(--ink);border-radius:3px;overflow:hidden;transform:skewX(-8deg)}
@@ -692,7 +694,7 @@ function start(saved){
   if(!SPORTS.some(x=>x[0]===state.sport))state.sport="basketball";
   if(!SORTS[state.sort])state.sort="open";
   if(!(state.from<0&&state.custom)&&!PLACES[state.from])state.from=0;state.radius=Math.min(15,Math.max(1,+state.radius||5));
-  SPORTS.forEach(([v,t])=>$("sports").append(h("button",{class:"chip",type:"button","data-v":v,onclick:()=>set({sport:v})},t)));
+  SPORTS.forEach(([v,t])=>$("sports").append(h("button",{class:"chip",type:"button","data-v":v,onclick:()=>set({sport:v})},icon(v),h("span",null,t))));
   PLACES.forEach((p,i)=>$("from").append(h("option",{value:i},p[0])));
   DAYS.forEach((dn,i)=>$("whenDay").append(h("option",{value:i},dn)));
   document.querySelectorAll("#env button").forEach(b=>b.onclick=()=>set({env:b.dataset.v}));
