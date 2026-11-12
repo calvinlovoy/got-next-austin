@@ -43,6 +43,8 @@
   .ball{width:62px;height:62px;flex:none}
   .mark{font:italic 800 56px/.82 var(--display);letter-spacing:-.5px;text-transform:uppercase;margin:0}
   .mark span{color:var(--accent)}
+  .brand>div{display:flex;align-items:center;gap:10px 18px;flex-wrap:wrap}
+  .city{margin:0;font:italic 700 19px/1 var(--display);text-transform:uppercase;letter-spacing:1px;color:var(--band-ink);border:2px solid var(--accent);border-radius:3px;padding:7px 13px 6px;transform:skewX(-8deg)}
   .clock{display:flex;align-items:center;gap:9px;font:italic 700 17px/1 var(--display);font-variant-numeric:tabular-nums;text-transform:uppercase;padding:9px 14px;border:2px solid var(--accent);border-radius:4px;background:#000;color:#fff}
   .beat{width:10px;height:10px;border-radius:50%;background:#3ddc84}
   .beat.off{background:#8d867e}
@@ -150,7 +152,7 @@
     .main{grid-template-columns:1fr}
     .mapcol{position:static;width:100%}
     #map{height:320px}
-    .mark{font-size:42px} .ball{width:48px;height:48px} .headline{font-size:30px}
+    .mark{font-size:42px} .ball{width:48px;height:48px} .city{font-size:15px;padding:5px 10px 4px} .headline{font-size:30px}
   }
 </style>
 </head>
@@ -165,6 +167,7 @@
       </svg>
       <div>
       <p class="mark">Got <span>Next</span></p>
+      <p class="city">Austin, Texas</p>
       </div>
     </div>
     <div class="clock" title="All times are Central time"><span class="beat" id="beat"></span><span id="clock">CST</span></div>
@@ -491,7 +494,6 @@ function target(){const nowMs=Date.now(),n=austin(nowMs);if(state.when==="now")r
 
 /* ---------- geometry ---------- */
 function offset(v){const o=origin();const dy=(v.lat-o.lat)*69.05,dx=(v.lon-o.lon)*69.17*Math.cos(o.lat*Math.PI/180);return{dx,dy,dist:Math.hypot(dx,dy)}}
-function compass(dx,dy){const a=(Math.atan2(dx,dy)*180/Math.PI+360)%360;return["N","NE","E","SE","S","SW","W","NW"][Math.round(a/45)%8]}
 
 /* ---------- status ---------- */
 function offers(v,sport){return v.kind==="outdoor"?v.sports.includes(sport):!!(v.sessions[sport]&&v.sessions[sport].length)}
@@ -553,7 +555,7 @@ function sig(rows,T){return rows.map(r=>r.v.id+pillText(r.st,T)).join("|")}
 function card({v,o,st},n,T){
   const el=h("article",{class:"card "+st.state,id:"card-"+v.id});
   el.append(h("div",{class:"top"},h("div",{class:"name"},h("span",{class:"num"},String(n)),h("h3",null,v.name)),h("span",{class:"pill "+st.state},pillText(st,T))));
-  el.append(h("div",{class:"meta"},`${o.dist.toFixed(1)} mi ${compass(o.dx,o.dy)} · ${v.kind==="indoor"?"Indoor gym":"Outdoor court"} · ${v.addr}`));
+  el.append(h("div",{class:"meta"},`${o.dist.toFixed(1)} mi · ${v.kind==="indoor"?"Indoor gym":"Outdoor court"} · ${v.addr}`));
   if(st.state==="reported"){const c=st.c;
     el.append(h("div",{class:"alert"},h("strong",null,REASONS[c.reason]||"Closed"),`. Posted ${stamp(c.at)}, ${c.until==null?"until further notice":"through "+stamp(c.until)}.`,c.note?" "+c.note:""));}
   const wins=h("div",{class:"wins"},h("span",{class:"meta"},(T.live?"Today":DAYS[T.day])+":"));
