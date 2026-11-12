@@ -28,6 +28,14 @@ It is a single file with no build step. Open `index.html` in a browser, or serve
 
 To add or update a rec center, edit the `VENUES` list near the top of the script in `index.html`. Parks live in the `PARK_DATA` block, one line per park.
 
+**Automatic updates**
+
+A scheduled job (`.github/workflows/refresh.yml`) runs every Monday morning and can be started by hand from the Actions tab with "Run workflow".
+
+- Parks: `scripts/update-parks.mjs` pulls the current courts and fields from the city inventory and rewrites the `PARK_DATA` block when something changed. The new data has to pass size and location checks and `scripts/smoke.mjs` before it is saved. If it fails, the old data stays.
+- Rec center schedules: `scripts/check-schedules.mjs` reads each rec center page and remembers its schedule links, the files behind them and any posted open play times in `data/schedule-fingerprints.json`. When one of those changes, the job opens an issue that lists what moved. It does not rewrite the times in `VENUES`. Those are still updated by hand from the new schedule.
+- The first run only records a starting point. A center that cannot be read two weeks in a row is listed in an issue too.
+
 **Live closure reports**
 
 The app can share "Report closed" updates between everyone who has it open. That feature uses the shared data store of the Claude artifact the app was built in, so it is switched off when the page is hosted elsewhere, including here. One known city notice (the Pan Am gym closure) is built in.

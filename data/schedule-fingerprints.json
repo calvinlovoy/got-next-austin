@@ -1,0 +1,201 @@
+{
+ "note": "Written by scripts/check-schedules.mjs. Last week's view of each rec center page, used to spot schedule changes.",
+ "lastChecked": "2026-11-12",
+ "pages": {
+  "https://www.austintexas.gov/parks/locations/montopolis-recreation-and-community-center": {
+   "venues": [
+    "Montopolis Rec Center"
+   ],
+   "links": [
+    {
+     "href": "https://austin.widen.net/view/pdf/fgvp2ghuw1",
+     "text": "Gym Schedule",
+     "title": "Parks and Recreation - Web_MRCC Schedule Template (2).pdf",
+     "asset": "3a7214d3-4096-4a14-82c8-e9548ae79520",
+     "hash": "7081827494e5ad1a"
+    },
+    {
+     "href": "https://austin.widen.net/view/pdf/nqahurq093",
+     "text": "October Schedule",
+     "title": "Parks and Recreation - Web_Varsity Art 2026-4.pdf",
+     "asset": "826273ad-4e77-4c62-ae89-43a18f33051b",
+     "hash": "595b95a8f85629f8"
+    }
+   ],
+   "lines": [],
+   "fails": 0,
+   "lastOk": "2026-11-12"
+  },
+  "https://www.austintexas.gov/parks/locations/george-morales-dove-springs-recreation-center": {
+   "venues": [
+    "Dove Springs Rec Center"
+   ],
+   "links": [
+    {
+     "href": "https://austin.widen.net/view/pdf/wccqgkx0lh",
+     "text": "Gym Schedule:",
+     "title": "Parks and Recreation - Web_Copy of Gym Schedules.pdf",
+     "asset": "b2678d7d-c4f4-4a07-8381-e9044b624457",
+     "hash": "cc43984e93ed6bae"
+    }
+   ],
+   "lines": [],
+   "fails": 0,
+   "lastOk": "2026-11-12"
+  },
+  "https://www.austintexas.gov/parks/south-austin-recreation-center": {
+   "venues": [
+    "South Austin Rec Center"
+   ],
+   "links": [
+    {
+     "href": "https://austin.widen.net/view/pdf/fm08gisbvo",
+     "text": "Gym Schedule",
+     "title": "Parks and Recreation - Web_Copy of SARC Gym Schedule Fall 2026 (1) (1).pdf",
+     "asset": "6daa4f94-3274-4438-a9c3-f0132c255371",
+     "hash": "7ccab3af37633585"
+    }
+   ],
+   "lines": [
+    "Senior Pickleball - Tuesday & Friday 11am-2pm"
+   ],
+   "fails": 0,
+   "lastOk": "2026-11-12"
+  },
+  "https://www.austintexas.gov/parks/locations/dittmar-recreation-center": {
+   "venues": [
+    "Dittmar Rec Center"
+   ],
+   "links": [
+    {
+     "href": "https://austin.widen.net/view/pdf/jnfqs1xi9i",
+     "text": "October Gym Schedule",
+     "title": "Parks and Recreation - Web_Dittmar_October_2026_Gym_Schedule.pdf",
+     "asset": "258bf853-03bc-43a4-82f1-3b85bf085ebb",
+     "hash": "0dca74dd6758e5d6"
+    }
+   ],
+   "lines": [],
+   "fails": 0,
+   "lastOk": "2026-11-12"
+  },
+  "https://www.austintexas.gov/parks/parque-zaragoza-recreation-center": {
+   "venues": [
+    "Parque Zaragoza Rec Center"
+   ],
+   "links": [],
+   "lines": [
+    "Open Play Basketball: Tuesday & Thursdays 11 a.m. to 2 p.m.",
+    "Open Play Pickleball: Wednesday, 12 p.m. to 2 p.m."
+   ],
+   "fails": 0,
+   "lastOk": "2026-11-12"
+  },
+  "https://austintexas.gov/department/oswaldo-ab-cantupan-american-recreation-center": {
+   "venues": [
+    "Pan Am Rec Center"
+   ],
+   "links": [],
+   "lines": [
+    "Open Play Basketball: Saturday 12 p.m. - 4 p.m."
+   ],
+   "fails": 0,
+   "lastOk": "2026-11-12"
+  },
+  "https://www.austintexas.gov/AustinRec": {
+   "venues": [
+    "Austin Rec Center"
+   ],
+   "links": [
+    {
+     "href": "https://austin.widen.net/s/qzvvl58ms9/open-play-pickleball-at-arc-26",
+     "text": "Open Play Pickleball",
+     "title": "Open-Play-Pickleball-at-ARC-26.pdf",
+     "asset": "7e7f1f2e-77e5-4df8-83b0-d67a7f85dda3",
+     "hash": "c4610b0925f2a272"
+    },
+    {
+     "href": "https://austin.widen.net/view/pdf/kfoawazniu",
+     "text": "10.18.26-10.31.26",
+     "title": "ARC Gym Schedule 10.18-10.31 1.pdf",
+     "asset": "a94dea18-f0df-4215-bd8a-2c79587f0df8",
+     "hash": "311d7c780ceb805a"
+    }
+   ],
+   "lines": [
+    "Open Play Badminton takes place in the gymnasium every Sunday from 2:15pm-3:45pm. Days and times subject to change without notice.",
+    "Open Play Pickleball takes place in the gymnasium on Mondays and Fridays from 9am-11:30am and Wednesday 9am-10:45am. Three indoor courts are available for all skill levels."
+   ],
+   "fails": 0,
+   "lastOk": "2026-11-12"
+  },
+  "https://www.austintexas.gov/parks/locations/gustavo-gus-l-garcia-recreation-center": {
+   "venues": [
+    "Gus Garcia Rec Center"
+   ],
+   "links": [
+    {
+     "href": "https://austin.widen.net/s/dnnxpgpcjv/ggrc-gym-fall-schedule-2026",
+     "text": "Gym Schedule",
+     "title": "GGRC-GYM-Fall-Schedule-2026.pdf",
+     "asset": "090b6dd7-fe2d-4665-a3f8-069d8d72ba70",
+     "hash": "17b25c745a6af598"
+    }
+   ],
+   "lines": [],
+   "fails": 0,
+   "lastOk": "2026-11-12"
+  },
+  "https://www.austintexas.gov/parks/pickleball": {
+   "venues": [
+    "Northwest Rec Center"
+   ],
+   "links": [],
+   "lines": [
+    "All Ages Open Play Tuesday, 7 p.m. to 9 p.m.",
+    "Open Play Monday to Friday, 5:30 p.m. to 10 p.m. during the school year",
+    "Open Play Monday, Wednesday, Friday, 7 a.m. to 10 p.m.",
+    "Open Play Schedule: Monday: 9 a.m. - 12 p.m.",
+    "Open Play School Year: Monday-Friday 7 a.m. to 2:30 p.m and 6:30-8:30 p.m., Saturday-Sunday 7 a.m. to 8:30 p.m.",
+    "Open Play Summer/School Year Camp Days: Monday-Friday 6:30-8:30 p.m., Saturday-Sunday 7 a.m. to 8:30 p.m.",
+    "Open Play Tuesday 11:00 a.m. to 1:00 p.m.",
+    "Open Play: 7 Days a Week, 7 a.m. to 10 p.m.",
+    "Open Play: 7 Days a Week, 8 a.m. to 10 p.m.",
+    "Open Play: Monday and Friday, 9 a.m. to 12 p.m.",
+    "Open Play: Monday and Wednesday, 10:30 a.m. to 1:30 p.m.",
+    "Open Play: Monday, 6 p.m. to 9 p.m. and Saturday, 10 a.m. to 12 p.m.",
+    "Open Play: Mondays, 6:00-8:30 p.m.",
+    "Open Play: Thursday, 4 p.m. to 7 p.m.",
+    "Open Play: Tuesday and Thursday, 12 p.m. to 3 p.m. and Saturday, 10 a.m. to 2 p.m.",
+    "Open play: Thursday, 4 p.m. to 8 p.m.",
+    "Varsity Generation Open Play Monday, 10 a.m. to 12 p.m.",
+    "Varsity Generation Open Play Tuesday and Friday 11 a.m. to 2 p.m."
+   ],
+   "fails": 0,
+   "lastOk": "2026-11-12"
+  },
+  "https://www.austintexas.gov/parks/locations/turner-roberts-recreation-center": {
+   "venues": [
+    "Turner-Roberts Rec Center"
+   ],
+   "links": [],
+   "lines": [
+    "Open Play Basketball: Tuesday, Thursday, and Friday: 6:00pm - 8:30pm; Saturday 10:00am - 3:30pm; Sunday 1:00pm - 4:30pm (Weeknight evening free play will return August 11th)"
+   ],
+   "fails": 0,
+   "lastOk": "2026-11-12"
+  },
+  "https://www.austintexas.gov/parks/locations/delores-duffie-recreation-center": {
+   "venues": [
+    "Delores Duffie Rec Center"
+   ],
+   "links": [],
+   "lines": [
+    "Open Play Basketball: Monday's & Friday's 6:00PM - 9:00PM (Subject to change)",
+    "Open Play Volleyball: Thursday's 6:00PM - 9:00PM (Subject to change)"
+   ],
+   "fails": 0,
+   "lastOk": "2026-11-12"
+  }
+ }
+}
