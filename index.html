@@ -267,7 +267,7 @@ const VENUES=[
   url:"https://www.austintexas.gov/parks/locations/george-morales-dove-springs-recreation-center",
   sessions:{basketball:[...d(0,12,15.5),...d(1,12,17),...d(1,18,20.5),...d(2,11,17),...d(2,18,20.5),...d(3,9,17),...d(4,9,17),...d(5,12,17),...d(5,18,20.5),...d(6,10,15.5)],
             pickleball:[...d([1,5],9,12),...d(3,18,20.5)]}},
- {id:"sarc",kind:"indoor",name:"South Austin Rec Center",addr:"1100 Cumberland Rd, Austin, TX 78704",phone:"512-978-2440",lat:30.2419,lon:-97.7680,
+ {id:"sarc",kind:"indoor",name:"South Austin Rec Center",addr:"1100 Cumberland Rd, Austin, TX 78704",phone:"512-978-2440",lat:30.2419,lon:-97.7680,n:{basketball:2},
   url:"https://www.austintexas.gov/parks/south-austin-recreation-center",
   sessions:{basketball:[...d(1,11,16),...d(2,14,16),...d(3,13,16),...d(4,14,16),...d(5,14,16),...d(6,9,13,"Adults"),...d(6,13,15,"Family and women")],
             pickleball:[...d(2,18,21),...d(4,11,14)]}},
@@ -282,14 +282,13 @@ const VENUES=[
   url:"https://austintexas.gov/department/oswaldo-ab-cantupan-american-recreation-center",
   sessions:{basketball:d(6,12,16)}},
  {id:"arc",kind:"indoor",name:"Austin Rec Center",addr:"1301 Shoal Creek Blvd, Austin, TX 78701",phone:"512-978-2370",lat:30.2775,lon:-97.7505,
-  url:"https://www.austintexas.gov/AustinRec",
-  
+  url:"https://www.austintexas.gov/AustinRec",n:{pickleball:3},
   sessions:{basketball:ARC_OPEN,volleyball:ARC_OPEN,badminton:[...ARC_OPEN,...d(0,14,15.5)],pickleball:[...ARC_OPEN,...d(1,9.25,11.5),...d(3,9,10.75),...d(5,9,11.5)]}},
  {id:"gusgarcia",kind:"indoor",name:"Gus Garcia Rec Center",addr:"1201 E Rundberg Ln, Austin, TX 78753",phone:"512-978-2525",lat:30.3529,lon:-97.6821,
   url:"https://www.austintexas.gov/parks/locations/gustavo-gus-l-garcia-recreation-center",
   sessions:{basketball:[...d(0,14.5,17),...d([1,3],12,14,"General open play"),...d([1,2,3],18,21),...d(6,12,16,"Shared with volleyball")],
             volleyball:[...d(5,18,21),...d(6,12,16,"Shared with basketball")],pickleball:[...d(0,13,14.5),...d([2,4],11,13),...d(6,10,12)]}},
- {id:"nwrec",kind:"indoor",name:"Northwest Rec Center",addr:"2913 Northland Dr, Austin, TX 78731",phone:"512-974-6972",lat:30.3334,lon:-97.7510,url:PBU,
+ {id:"nwrec",kind:"indoor",name:"Northwest Rec Center",addr:"2913 Northland Dr, Austin, TX 78731",phone:"512-974-6972",lat:30.3334,lon:-97.7510,url:PBU,n:{pickleball:3},
   sessions:{pickleball:d([1,3],10.5,13.5)}},
  {id:"turnerroberts",kind:"indoor",name:"Turner-Roberts Rec Center",addr:"7201 Colony Loop Dr, Austin, TX 78724",phone:"512-978-2690",lat:30.2987,lon:-97.6376,
   url:"https://www.austintexas.gov/parks/locations/turner-roberts-recreation-center",
@@ -444,7 +443,7 @@ const PARK_FIX={
  "Austin High Tennis Center":{flags:"",hrs:{tennis:[...d(WK,17.5,22),...d([0,6],7,22)],pickleball:[...d(WK,17.5,22),...d([0,6],7,22)]},more:[["calendar","Shared with Austin High. Public play pauses for school events"]]},
  "Pan American Neighborhood Park":{hrs:{pickleball:[...d([1,3,5],7,22),...d([2,4],7,19),...d([0,6],7,9)]}},
  "South Austin Neighborhood Park":{hrs:{pickleball:d(ALL,8,22)}},
- "Hancock Golf Course":{name:"Hancock Rec Center grounds",addSport:"pickleball",hrs:{pickleball:[...d(WK,7,14.5),...d(WK,18.5,20.5),...d([0,6],7,20.5)]},more:[["pickleball","2 pickleball courts on a shared court"],["doc","Pickleball hours are for the school year"]]},
+ "Hancock Golf Course":{name:"Hancock Rec Center grounds",addSport:"pickleball",count:{pickleball:2},hrs:{pickleball:[...d(WK,7,14.5),...d(WK,18.5,20.5),...d([0,6],7,20.5)]},more:[["pickleball","2 pickleball courts on a shared court"],["doc","Pickleball hours are for the school year"]]},
  "Roy G. Guerrero Colorado River Metro Park":{dropSport:"volleyball",more:[["alert","Krieg sand volleyball courts are closed through spring 2027"]]},
  "Emma Long Metro Park":{feeText:"Park entrance fee"},
  "Walter E. Long Metro Park":{feeText:"Park entrance fee"},
@@ -467,7 +466,7 @@ PARK_DATA.trim().split("\n").forEach(line=>{
   (fix.more||[]).forEach(f=>feats.push(f));
   if(!sports.length)return;
   const id=nm.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
-  VENUES.push({id,kind:"outdoor",name:fix.name||nm,addr:ad.replace(/ (\d{5})$/,", Austin, TX $1"),lat:+lat,lon:+lon,url:PARK_SRC,sports,hrs:fix.hrs||(pD+pS?{pickleball:d(ALL,7,22)}:null)});
+  VENUES.push({id,kind:"outdoor",name:fix.name||nm,addr:ad.replace(/ (\d{5})$/,", Austin, TX $1"),lat:+lat,lon:+lon,url:PARK_SRC,sports,n:{basketball:nb,tennis:tD+tS,pickleball:pD+pS,volleyball:nv,soccer:sF+sM+sP,...fix.count},hrs:fix.hrs||(pD+pS?{pickleball:d(ALL,7,22)}:null)});
   FEATS[id]=feats});
 const VBY=Object.fromEntries(VENUES.map(v=>[v.id,v]));
 const PLACES=[["Downtown",30.2672,-97.7431],["East Riverside",30.2380,-97.7220],["South Congress",30.2470,-97.7505],["South Lamar",30.2440,-97.7810],
@@ -528,10 +527,13 @@ function pillText(st,T){
   return st.nextDay==null?"Nothing posted":"Next: "+(st.tomorrow?"tomorrow":DAYS[st.nextDay])+" "+fmt(st.at)}
 const RANK={open:0,soon:1,later:2,closed:3,reported:4};
 
-const SORT_LABELS=[["near","Nearest"],["open","Open first"],["late","Closes latest"],["name","A to Z"]];
+const SORT_LABELS=[["near","Nearest"],["open","Open first"],["late","Closes latest"],["most","Most courts"],["name","A to Z"]];
+// Courts or fields a venue has for a sport. Rec center gyms count as one unless the city says otherwise.
+const count=(v,s)=>(v.n&&v.n[s])||1;
 const lateKey=r=>r.st.state==="open"||r.st.state==="soon"?10000+r.st.until:r.st.state==="later"?5000-r.st.at:r.st.state==="closed"?1000:0;
 const SORTS={open:(a,b)=>RANK[a.st.state]-RANK[b.st.state]||a.o.dist-b.o.dist,near:(a,b)=>a.o.dist-b.o.dist,
-  late:(a,b)=>lateKey(b)-lateKey(a)||a.o.dist-b.o.dist,name:(a,b)=>a.v.name.localeCompare(b.v.name)};
+  late:(a,b)=>lateKey(b)-lateKey(a)||a.o.dist-b.o.dist,
+  most:(a,b)=>count(b.v,state.sport)-count(a.v,state.sport)||a.o.dist-b.o.dist,name:(a,b)=>a.v.name.localeCompare(b.v.name)};
 function compute(){const T=target();
   const q=ui.q.trim().toLowerCase();
   const all=VENUES.filter(v=>offers(v,state.sport)&&(state.env==="both"||v.kind===state.env)&&(!q||(v.name+" "+v.addr).toLowerCase().includes(q))).map(v=>({v,o:offset(v),st:status(v,state.sport,T)}));
@@ -714,7 +716,8 @@ function syncControls(){
   document.querySelectorAll("#env button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.v===state.env)));
   let own=$("from").querySelector('option[value="-1"]');
   if(state.custom){if(!own){own=h("option",{value:-1});$("from").prepend(own)}own.textContent=state.custom.label}else if(own)own.remove();
-  document.querySelectorAll("#sort .chip").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.v===state.sort)));
+  document.querySelectorAll("#sort .chip").forEach(b=>{b.setAttribute("aria-pressed",String(b.dataset.v===state.sort));
+    if(b.dataset.v==="most")b.textContent=state.sport==="soccer"?"Most fields":"Most courts"});
   $("radius").value=state.radius;$("radiusOut").textContent=state.radius+" mi";$("from").value=state.from;$("openOnly").checked=state.openOnly;
   $("when").value=state.when;$("whenDay").hidden=$("whenTime").hidden=state.when==="now";$("whenDay").value=state.day;
   $("whenTime").value=String(Math.floor(state.time/60)).padStart(2,"0")+":"+String(state.time%60).padStart(2,"0")}
