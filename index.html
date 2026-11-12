@@ -50,7 +50,7 @@
   .beat.off{background:#8d867e}
 
   .controls{background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--ink);border-radius:6px;padding:14px 16px;display:grid;grid-template-columns:1fr;gap:14px}
-  .row{display:flex;flex-wrap:wrap;gap:14px 22px;align-items:flex-end}
+  .row{display:flex;flex-wrap:wrap;gap:14px 22px;align-items:flex-start}
   .field{display:flex;flex-direction:column;gap:6px;min-width:0}
   .lab{font:400 13.5px/1 "Russo One","Arial Black",sans-serif;letter-spacing:1px;text-transform:uppercase;color:var(--ink)}
   .chips{display:flex;flex-wrap:wrap;gap:8px}
@@ -67,7 +67,7 @@
   .radius{display:flex;align-items:center;gap:10px}
   .radius input{width:170px;accent-color:var(--accent)}
   .radius output{font:italic 800 26px/1 var(--display);min-width:74px;font-variant-numeric:tabular-nums}
-  .switch{display:flex;align-items:center;gap:8px;font-weight:700;cursor:pointer;min-height:38px}
+  .switch{display:flex;align-items:center;gap:8px;font-weight:700;cursor:pointer;min-height:38px;margin-top:20px}
   .switch input{width:18px;height:18px;accent-color:var(--accent)}
   .hint{color:var(--muted);font-size:13.5px;margin:0}
   .fromrow{display:flex;gap:6px;flex-wrap:wrap}
@@ -93,6 +93,7 @@
   .compass svg{display:block;width:100%;height:auto}
   .sortbar{display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap;margin-top:6px}
   .chip.sm{padding:4px 12px;font-size:13.5px}
+  .venueq{flex:1 1 180px;max-width:300px;min-width:0;margin-left:auto;min-height:34px;padding:4px 10px}
   .pin{width:26px;height:26px;display:grid;place-items:center;font:700 12.5px var(--body);color:#17130f;border:2px solid #17130f;border-radius:50%;box-shadow:0 1px 5px rgba(0,0,0,.45);cursor:pointer}
   .pin.out{border-radius:5px;transform:rotate(45deg) scale(.88)} .pin.out span{transform:rotate(-45deg)}
   .pin.open,.pin.soon{background:#ee6730} .pin.later{background:#fff} .pin.closed{background:#8b8d91;color:#fff} .pin.reported{background:#17130f;color:#fff;border:3px solid #e0281b}
@@ -193,9 +194,9 @@
       <div class="field"><label class="lab" for="radius">Radius</label>
         <div class="radius"><input type="range" id="radius" min="1" max="15" step="1"><output id="radiusOut" for="radius">5 mi</output></div>
       </div>
-      <div class="field"><label class="lab" for="from">Starting from</label><div class="fromrow"><select id="from"></select><button type="button" class="btn" id="locate" hidden>Use my location</button></div>
+      <div class="field"><label class="lab" for="from">Select your neighborhood or enter your address</label><div class="fromrow"><select id="from"></select><button type="button" class="btn" id="locate" hidden>Use my location</button></div>
         <form class="fromrow addr" id="addrForm" hidden>
-          <input type="text" id="addr" placeholder="Or type an Austin address" autocomplete="street-address" aria-label="Austin address" maxlength="120">
+          <input type="text" id="addr" placeholder="Austin address or place" autocomplete="street-address" aria-label="Austin address" maxlength="120">
           <button type="submit" class="btn" id="addrGo">Find</button>
         </form>
         <div class="addrout" id="addrOut" aria-live="polite"></div></div>
@@ -230,7 +231,8 @@
     </aside>
     <section aria-live="polite">
       <h1 class="headline" id="headline">Finding courts</h1>
-      <div class="sortbar"><span class="lab" id="lab-sort">Sort by</span><div class="chips" id="sort" role="group" aria-labelledby="lab-sort"></div></div>
+      <div class="sortbar"><span class="lab" id="lab-sort">Sort by</span><div class="chips" id="sort" role="group" aria-labelledby="lab-sort"></div>
+        <input type="search" id="venueQ" class="venueq" placeholder="Search venues" aria-label="Search venues by name or street" maxlength="60" autocomplete="off"></div>
       <div class="list" id="list"></div>
     </section>
   </div>
@@ -483,7 +485,7 @@ let map=null,pins=null,ring=null,startMk=null,viewKey="",lastRows=[],drawing=fal
 function origin(){if(state.from<0&&state.custom)return state.custom;const p=PLACES[state.from]||PLACES[0];return{lat:p[1],lon:p[2],label:p[0],phrase:p[0]}}
 // Known city notice, used until the live store answers (and on hosts without one).
 let closures={panam:{reason:"maintenance",note:"City notice: gym and weight room closed, open play and leagues suspended.",at:1791565200000,until:null}}, prev=null, dirty=false, lastSig="";
-const ui={report:null,draft:{reason:"maintenance",dur:"today",note:""},week:new Set(),busy:false,msg:""};
+const ui={q:"",report:null,draft:{reason:"maintenance",dur:"today",note:""},week:new Set(),busy:false,msg:""};
 const live={db:null,uid:null,canWrite:null,status:"connecting"};
 const $=id=>document.getElementById(id);
 
@@ -531,7 +533,8 @@ const lateKey=r=>r.st.state==="open"||r.st.state==="soon"?10000+r.st.until:r.st.
 const SORTS={open:(a,b)=>RANK[a.st.state]-RANK[b.st.state]||a.o.dist-b.o.dist,near:(a,b)=>a.o.dist-b.o.dist,
   late:(a,b)=>lateKey(b)-lateKey(a)||a.o.dist-b.o.dist,name:(a,b)=>a.v.name.localeCompare(b.v.name)};
 function compute(){const T=target();
-  const all=VENUES.filter(v=>offers(v,state.sport)&&(state.env==="both"||v.kind===state.env)).map(v=>({v,o:offset(v),st:status(v,state.sport,T)}));
+  const q=ui.q.trim().toLowerCase();
+  const all=VENUES.filter(v=>offers(v,state.sport)&&(state.env==="both"||v.kind===state.env)&&(!q||(v.name+" "+v.addr).toLowerCase().includes(q))).map(v=>({v,o:offset(v),st:status(v,state.sport,T)}));
   let rows=all.filter(r=>r.o.dist<=state.radius);
   if(state.openOnly)rows=rows.filter(r=>r.st.state==="open"||r.st.state==="soon");
   rows.sort(SORTS[state.sort]||SORTS.open);
@@ -548,7 +551,8 @@ function render(soft){
   const list=$("list");list.textContent="";
   if(!rows.length){
     const pool=all.filter(r=>!state.openOnly||r.st.state==="open"||r.st.state==="soon").sort((a,b)=>a.o.dist-b.o.dist)[0];
-    const box=h("div",{class:"empty"},h("strong",null,`Nothing ${state.openOnly?"open ":""}for ${sportName} within ${state.radius} mi.`));
+    const box=h("div",{class:"empty"},h("strong",null,ui.q.trim()?`No ${sportName} venue matching "${ui.q.trim()}" within ${state.radius} mi.`:`Nothing ${state.openOnly?"open ":""}for ${sportName} within ${state.radius} mi.`));
+    if(ui.q.trim())box.append(h("button",{class:"btn",type:"button",onclick:()=>{ui.q="";$("venueQ").value="";prev=null;render()}},"Clear search"));
     if(pool&&pool.o.dist>state.radius&&Math.ceil(pool.o.dist)<=15)box.append(h("span",null,`The closest match is ${pool.v.name}, ${pool.o.dist.toFixed(1)} mi away.`),
       h("button",{class:"btn solid",type:"button",onclick:()=>{set({radius:Math.ceil(pool.o.dist)})}},`Widen to ${Math.ceil(pool.o.dist)} mi`));
     else if(state.openOnly)box.append(h("button",{class:"btn solid",type:"button",onclick:()=>set({openOnly:false})},"Show closed ones too"));
@@ -635,8 +639,9 @@ function drawMap(rows){lastRows=rows;if(!map||drawing)return;drawing=true;const 
    Public service rules: one request per second at most, no search-as-you-type. So it runs on submit only, waits between calls and caches answers. */
 const GEO_BOX="-98.05,30.55,-97.50,30.05";let geoLast=0;const geoCache=new Map();
 function addrSay(...kids){const o=$("addrOut");o.textContent="";kids.flat().forEach(k=>k&&o.append(k.nodeType?k:h("span",null,k)))}
-function addrPick(r){const parts=String(r.display_name||"").split(", "),label=parts.slice(0,2).join(", ")||"Address";
-  $("addr").value=label;addrSay(h("small",null,"Starting from "+label+". Address lookup by OpenStreetMap."));setCustom(+r.lat,+r.lon,label,label)}
+function addrPick(r){const parts=String(r.display_name||"").split(", ");
+  const label=(/^\d+[A-Za-z]?$/.test(parts[0])&&parts[1]?parts[0]+" "+parts[1]:parts.slice(0,2).join(", "))||"Address";
+  $("addr").value=label;addrSay(h("small",null,"Address lookup by OpenStreetMap."));setCustom(+r.lat,+r.lon,"Entered address",label,true)}
 async function findAddress(){const q=$("addr").value.trim().replace(/\s+/g," "),go=$("addrGo");
   if(q.length<3){addrSay("Type a street address or a place name.");return}
   let res=geoCache.get(q.toLowerCase());
@@ -649,7 +654,7 @@ async function findAddress(){const q=$("addr").value.trim().replace(/\s+/g," "),
   if(!res.length){addrSay("No match in the Austin area. Try adding a street number or a cross street.");return}
   if(res.length===1){addrPick(res[0]);return}
   addrSay(h("small",null,"Which one?"),res.map(r=>h("button",{class:"btn",type:"button",onclick:()=>addrPick(r)},String(r.display_name||"").split(", ").slice(0,4).join(", "))))}
-function setCustom(lat,lon,label,phrase){state.custom={lat,lon,label,phrase};set({from:-1})}
+function setCustom(lat,lon,label,phrase,fromAddr){if(!fromAddr){$("addr").value="";addrSay()}state.custom={lat,lon,label,phrase};set({from:-1})}
 function locate(){const b=$("locate"),done=()=>{b.disabled=false;b.textContent="Use my location"};b.disabled=true;b.textContent="Finding you";
   navigator.geolocation.getCurrentPosition(pos=>{done();const lat=pos.coords.latitude,lon=pos.coords.longitude;
     if(Math.hypot((lat-30.2672)*69.05,(lon+97.7431)*59.7)>40){toast("You look to be outside the Austin area, which is all this tool covers. Pick a neighborhood to browse it.","warn");return}
@@ -727,13 +732,14 @@ function start(saved){
   DAYS.forEach((dn,i)=>$("whenDay").append(h("option",{value:i},dn)));
   document.querySelectorAll("#env button").forEach(b=>b.onclick=()=>set({env:b.dataset.v}));
   $("radius").oninput=e=>set({radius:+e.target.value});
-  $("from").onchange=e=>{if(+e.target.value>=0){$("addr").value="";addrSay()}set({from:+e.target.value})};
+  $("from").onchange=e=>{if(+e.target.value>=0){state.custom=null;$("addr").value="";addrSay()}set({from:+e.target.value})};
   $("openOnly").onchange=e=>set({openOnly:e.target.checked});
   $("when").onchange=e=>set({when:e.target.value});
   $("whenDay").onchange=e=>set({day:+e.target.value});
   $("whenTime").onchange=e=>{const[a,b]=(e.target.value||"18:00").split(":").map(Number);set({time:a*60+b})};
   SORT_LABELS.forEach(([v,l])=>$("sort").append(h("button",{class:"chip sm",type:"button","data-v":v,onclick:()=>set({sort:v})},l)));
   if(!IN_ARTIFACT&&"geolocation" in navigator){$("locate").hidden=false;$("locate").onclick=locate}
+  $("venueQ").oninput=e=>{ui.q=e.target.value;prev=null;render()};
   if(!IN_ARTIFACT){$("addrForm").hidden=false;$("addrForm").addEventListener("submit",e=>{e.preventDefault();findAddress()})}
   syncControls();initMap();render();tick();setInterval(tick,15000);connect();
   document.addEventListener("focusout",()=>setTimeout(()=>{if(dirty)render(true)},50))}
