@@ -244,7 +244,7 @@
 
   <section class="about">
     <h2>About</h2>
-    <p>Indoor times are the free open play hours each City of Austin recreation center posted on its gym schedule, collected November 11, 2026. Outdoor courts and fields come from the city's parks facility inventory and are first come, first served unless marked. Most follow city park hours, 5 a.m. to 10 p.m., and some courts post shorter hours. The city changes gym schedules without notice.</p>
+    <p>Indoor times are the free open play hours each City of Austin recreation center posted on its gym schedule, collected November 11, 2026. Outdoor courts and fields come from the city's parks facility inventory and are first come, first served unless marked. Most follow city park hours, 5 a.m. to 10 p.m., and some courts post shorter hours. The city changes gym schedules without notice. Parks outside the City of Austin system, from Georgetown down to San Marcos, come from OpenStreetMap and have not been checked against each town's listings. Some neighborhood parks there are for residents only, so look for a posted sign.</p>
   </section>
 </div>
 <div class="toasts" id="toasts" aria-live="assertive"></div>
@@ -470,6 +470,176 @@ PARK_DATA.trim().split("\n").forEach(line=>{
   const id=nm.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
   VENUES.push({id,kind:"outdoor",name:fix.name||nm,addr:ad.replace(/ (\d{5})$/,", Austin, TX $1"),lat:+lat,lon:+lon,url:PARK_DIR+"#"+nm[0].toLowerCase(),sports,n:{basketball:nb,tennis:tD+tS,pickleball:pD+pS,volleyball:nv,soccer:sF+sM+sP,...fix.count},hrs:fix.hrs||(pD+pS?{pickleball:d(ALL,7,22)}:null)});
   FEATS[id]=feats});
+/* Parks outside the City of Austin system: public parks with mapped courts or fields on OpenStreetMap, within 15 miles of the
+   address search area. Snapshot taken Nov 12, 2026. (c) OpenStreetMap contributors, ODbL. One line per park:
+   name|town|lat|lon|tennis|pickleball|basketball|volleyball|soccer|lit sports (t p b v s)|operator|OpenStreetMap id */
+const AREA_DATA=`
+Anderson Mill West Park & Pavilion|El Salido Parkway, Williamson County|30.4667|-97.8380|2|0|1|1|0|||w546761380
+Bastrop County Cedar Creek Park|FM 535, Cedar Creek|30.0829|-97.4979|0|0|1|1|2||Bastrop County|w321472870
+Bauerle Ranch Community Park|Lynnbrook Drive, Austin|30.1653|-97.8407|0|0|1|0|0|||w919481326
+Bee Cave Central Park|Bee Cave|30.3138|-97.9519|0|0|1|0|0|||w551935340
+Bee Creek Sports Complex|Sean Avery Path, Travis County|30.3431|-98.0318|0|0|0|0|5|||w1175921453
+Bell Farms Park North|Ring Drive, Manor|30.3428|-97.5269|0|0|1|0|0|||w583334752
+Ben E. Fisher Park|Athens Street, Manor|30.3404|-97.5645|0|0|1|0|0|||w580541720
+Berry Creek Park|Shinnecock Hills Drive, Georgetown|30.6954|-97.6882|0|0|1|0|0|||w117110614
+Berry Springs Community Park|Saskatoon Street, Georgetown|30.6647|-97.6437|0|0|1|0|0|||w1245712768
+Blue Hole Regional Park|Blue Hole Road, Wimberley|30.0038|-98.0875|0|0|1|1|1||Wimberley Parks and Recreation|w696047386
+Bob Bryant Park|Shoreline Drive, Bastrop County|30.1197|-97.3378|0|4|1|1|0|||w549390494
+Bohls Park|Bellaire Oaks Drive, Pflugerville|30.4341|-97.6122|0|0|0|0|2|||w74390487
+Boulder Trail Park|Whitemarsh Valley Walk, Austin|30.2880|-97.8321|0|0|0|0|1||Lost Creek LD/COA|w37057240
+Briarcliff Park|Kyle Drive, Briarcliff|30.4062|-98.0450|0|0|1|0|0|||w1299523277
+Brushy Creek Community Park|Great Oaks Drive, Brushy Creek|30.4959|-97.7328|0|0|0|1|1|s||w372777585
+Bull Branch Park|Mallard Lane, Taylor|30.5889|-97.4241|0|0|1|0|0|||w581630185
+Buttercup Creek Park|Buttercup Creek Boulevard, Cedar Park|30.5021|-97.8262|2|0|0|0|0||City of Cedar Park|w1423782356
+Carriage Hills Park #1|Carriage Hills Trail, Cedar Park|30.5222|-97.8599|0|0|1|0|0|||w268153955
+Cat Hollow Park|Sabertooth Drive, Brushy Creek|30.5048|-97.7318|1|0|1|1|0|||w372777584
+Cedar Park Recreation Center and Sculpture Garden|Davis Mountain Loop, Cedar Park|30.5265|-97.8272|0|0|1|0|0||City of Cedar Park|w613003567
+Chandler Creek Park|Agarita Trail, Round Rock|30.5320|-97.6504|2|0|1|1|0|||w1227459598
+Charlie Dobbins Park|Credo Lane, Hornsby Bend|30.2380|-97.5715|0|0|1|0|0|||w1105826061
+Chautauqua Park|West 7th Street, Georgetown|30.6374|-97.6849|0|0|1|0|0|||w31568729
+City Park|San Antonio Street, Buda|30.0853|-97.8429|0|0|0|1|0||City of Buda|w556898757
+Country Estates Park|South Pauley Drive, Hutto|30.5328|-97.5553|0|0|1|0|0|||w461801671
+Creedmoor City Park|Hartung Lane, Creedmoor|30.0868|-97.7334|2|0|0|1|1|||w1295822093
+Creekside Park|Brushy Creek Road, Brushy Creek|30.5196|-97.7383|2|0|1|0|0|||w545104146
+Dayna Lawson Park|Comfort Street, Cedar Park|30.5170|-97.8537|0|0|1|0|0|||w1093244493
+Dragon Park|Dragon, Lakeway|30.3661|-98.0004|0|0|1|0|0|||w603510603
+Dunbar Park|West Martin Luther King Drive, San Marcos|29.8765|-97.9475|0|0|1|0|0|b|City of San Marcos|w1086542956
+East Metropolitan Park|Burleson Manor Road, Travis County|30.2829|-97.5221|0|0|0|1|6||Travis County|w274731474
+Elgin Memorial Park|North Main Street, Elgin|30.3555|-97.3788|1|0|1|1|0|tb||w470078708
+Elizabeth Milburn Park|Blue Bell Drive, Cedar Park|30.4783|-97.8416|2|0|1|4|0||City of Cedar Park|w29410636
+Ella Wooten Park|Mendez Street, Austin|30.2921|-97.7024|0|0|1|0|0|||w349696755
+Eva Carrillo de García Park|Tilley Street, Austin|30.2955|-97.6949|0|0|1|0|0|b||w1228307102
+Fannie Robinson Park|Frank Street, Taylor|30.5663|-97.3996|0|0|2|0|1|||w28640383
+Fern Bluff Park|Park Valley Drive, Round Rock|30.5160|-97.7221|2|0|1|1|0|b||w542320872
+Fishermans Park|Willow Street, Bastrop|30.1128|-97.3242|1|1|2|1|1|tpb||w481895768
+Five Mile Dam Park|South Old Stagecoach Road, San Marcos|29.9425|-97.9007|0|0|0|0|8||Hays County|w364744034
+Fritz Hughes Park|Fritz Hughes Park Road, Travis County|30.3827|-97.9119|0|0|1|0|0|||w268302428
+Fritz Park|East Live Oak Street, Hutto|30.5478|-97.5422|2|0|1|1|0|||w91934026
+Frontier Park|Chisholm Valley Drive, Round Rock|30.4918|-97.6876|2|0|1|0|0|t||w866871799
+Geneva's Park|Royal Ascot Drive, Pflugerville|30.4954|-97.5768|0|0|1|0|0|||w683699387
+Georgetown Tennis Center|Ganada Drive, Georgetown|30.6845|-97.6850|11|0|0|0|0|t||w1178774400
+Grand Oaks Neighborhood Park|Campfield Parkway, Austin|30.1919|-97.8189|0|0|1|0|0|||w744750482
+Green Meadows Park|Green Meadows Lane, Buda|30.0628|-97.8151|0|0|1|0|0|||w313629010
+Greenridge Park|Cheyenne Valley Drive, Pflugerville|30.4901|-97.6047|0|0|1|0|0|||w1213734344
+Gregg-Clarke Park|Veterans Drive, Kyle|29.9916|-97.8847|1|0|1|0|0|bt|City of Kyle|w274592393
+Haley Nelson Park|Hamilton Creek Circle, Burnet|30.7615|-98.2358|0|0|0|0|3|||w768055129
+Heritage Park|Sweet William Lane, Pflugerville|30.4434|-97.6060|0|0|1|1|0|||w564145809
+Heritage Park|Heritage Park Drive, Cedar Park|30.5326|-97.8505|0|0|1|0|0||City of Cedar Park|w41320581
+Hidden Sandy Park|Copper Grassland Way, Pflugerville|30.4557|-97.5786|0|0|0|1|0|||w630495033
+High Country Park|Flower Hill Drive, Round Rock|30.4902|-97.6198|0|0|1|0|0|||w349662292
+Highland Village Park|Alistair Drive, Georgetown|30.7342|-97.7779|0|0|1|0|0|||w1395299201
+Hunters Chase Park|Cahill Drive, Austin|30.4455|-97.7704|2|0|0|0|0|||w30806272
+Hunters Crossing Park|Hunters Crossing Boulevard, Bastrop|30.1057|-97.3577|0|0|1|0|1||City of Bastrop Parks & Recreation|w481895987
+Hutto Lake Park|Estate Drive, Hutto|30.5113|-97.5693|0|0|1|0|0|||w470380146
+HVSA Texans Park at Riverwalk|Riverwalk Drive, Hutto|30.5251|-97.5650|0|0|0|0|6|||w470380143
+Janet Bartles Park|Buttercup Creek Boulevard, Cedar Park|30.4977|-97.8358|2|0|1|2|0|v||w92075627
+Jones Brothers Park|Lakeside Drive, Jonestown|30.4904|-97.9187|1|0|0|1|0|||w258555505
+Katherine Fleischer Park|Klattenhoff Drive, Wells Branch|30.4430|-97.6803|2|0|1|1|1|t|Wells Branch MUD|w161313942
+Kelly Park|Railroad Avenue, Georgetown|30.6295|-97.6837|0|0|1|0|0|||w547768507
+Kenneth M. Copeland Memorial Park|Cottonwood Parkway, San Marcos|29.8355|-97.9384|0|0|1|0|0|||w1107584186
+Kerr Community Park|Walnut Street, Bastrop|30.1087|-97.3124|0|0|1|0|0|||w594338574
+Lake Bastrop North Shore Park|North Shore Road, Bastrop County|30.1663|-97.2794|0|0|0|1|0||Lower Colorado River Authority|w1274621239
+Lake Bastrop South Shore Park|Bastrop County|30.1422|-97.2859|0|0|0|1|0||Lower Colorado River Authority|w1274621238
+Lake Creek Park|Round Rock|30.5096|-97.6664|0|0|0|2|0|||w1341689535
+Lake Forest Park|Lake Forest Drive, Round Rock|30.4982|-97.6207|1|0|0|0|0|t||w583530951
+Lake Pointe Park|Napa Drive, Bee Cave|30.3103|-97.9245|1|0|1|0|0|||w37891861
+Lakehouse Park|Sam Houston Drive, Bastrop County|30.1244|-97.3805|0|2|0|0|0|||w1286624136
+Lakeway City Park|Hurst Creek Road, Lakeway|30.3774|-97.9671|0|0|1|2|0|||w268253880
+Lakeway Swim Center Park|The Hills Drive, Lakeway|30.3511|-97.9948|0|0|1|1|0|||w1191318396
+Lakewood Park|Cactus Mound Drive, Leander|30.5604|-97.8108|0|0|1|1|0|||w316745249
+Liberty Hill City Park|County Road 200, Liberty Hill|30.6794|-97.9345|0|0|2|0|10|||w507366558
+Live Oak Park|Westfall Street, Burnet|30.7550|-98.2179|0|0|1|0|0|||w581363757
+Lockhart City Park|City Park Road, Lockhart|29.8889|-97.6661|0|0|1|0|1|||w552723171
+Lockhart State Park|Texas Park Road 10, Lockhart|29.8532|-97.6964|0|0|1|0|0||Texas Parks and Wildlife Department|w28720643
+Los Cielos Park|Los Cielos Boulevard, Austin|30.1684|-97.6247|0|0|1|0|0|||w697059400
+Mallard Pond Park|Hayfield Square, Pflugerville|30.4720|-97.5838|0|0|0|0|1|||w558677274
+Mary Elizabeth Branch Park|Garcia Street, Austin|30.3011|-97.7025|0|0|0|1|0|v|Mueller Community Association|w724199503
+Mary Quinlan Park|South Quinlan Park Road, Austin|30.3286|-97.9265|0|0|1|0|0|||w631931900
+McKinney Heights Park|Wiley Way, Austin|30.1504|-97.7437|0|0|1|1|0|||w744741780
+McMaster Athletic Complex|West L Walden Drive, Georgetown|30.6474|-97.6659|1|6|1|4|2|||w548484842
+Mesa Village Park|Georgetown Street, Round Rock|30.5221|-97.6709|0|0|0|0|1|||w261177083
+Mills Pond|Waterway Bend, Wells Branch|30.4495|-97.6797|0|0|1|0|0|||w470079059
+Mirror Lake Park|Kingston Lacy Boulevard, Pflugerville|30.4667|-97.6171|0|0|0|0|1|||w722993812
+Moose Park|Settlers Valley Drive, Pflugerville|30.4409|-97.6348|0|0|1|0|0|||w683695053
+Morris Memorial Park|West 4th Street, Elgin|30.3509|-97.3767|0|0|1|0|0|||w470078498
+Mueller Southeast Greenway|Tom Miller Street, Austin|30.2936|-97.6906|0|0|0|0|1|||w352905290
+Murphy Park|Veterans Drive, Taylor|30.5807|-97.4160|8|0|2|1|0|bt||w28640590
+Nelson Ranch Park|Nelson Ranch Road, Cedar Park|30.4945|-97.8341|2|0|1|0|0|||w29123704
+Noack Sports Complex|Nightwing Road, Austin|30.3189|-97.6560|0|0|0|0|2|||w1207211518
+Northeast Metropolitan Park|Travis County|30.4116|-97.5962|2|2|0|0|18|s||w74845966
+Nueces Street Park|Pecos Street, Lockhart|29.8859|-97.6777|0|0|2|0|0|||w552239653
+Old Settlers Park|Harrell Parkway, Round Rock|30.5405|-97.6294|12|0|0|1|18|st|City of Round Rock|w30894147
+Old Town Park|West 16th Street, Georgetown|30.6306|-97.6790|0|0|0|1|0|||w547768505
+Panther Park|West State Highway 29, Bertram|30.7463|-98.0612|2|0|0|0|0|t|City of Bertram|w45746959
+Paul Peña Park|Crystal River Parkway, San Marcos|29.8530|-97.9357|0|0|1|0|0|||w1091972620
+Pearson Place Park|Faith and Trust Cove, Austin|30.4989|-97.7565|2|0|1|0|0|||w582038049
+Pepper Rock Park|Great Oaks Drive, Brushy Creek|30.4981|-97.7401|0|0|1|0|0|b||w545104144
+Pfennig Park|Pfennig Lane, Pflugerville|30.4520|-97.6268|0|0|0|0|1|||w589335177
+Pfluger Park|Valley Meadow Drive, Pflugerville|30.4465|-97.6223|0|0|1|0|0|b||w75609850
+Pinnacle Park|Greenslope Lane, Georgetown|30.6080|-97.6524|0|0|1|0|0|||w31986751
+Quiet Moon Park|Quiet Moon Trail, Cedar Park|30.4733|-97.8524|0|0|1|0|0|||w45368006
+Rattan Creek Park|Rankin Trail, Jollyville|30.4480|-97.7565|0|0|1|1|1||North Austin Municipal Utility District #1|w30765334
+Richard Moya Park|Burleson Road, Austin|30.1701|-97.6657|0|0|1|0|0||Travis County, TX|w352692922
+Rio Vista Tennis Court|Cheatham Street, San Marcos|29.8780|-97.9344|6|0|0|0|0|||w414707191
+Robin Bledsoe Park|South Bagdad Road, Leander|30.5657|-97.8672|0|0|1|0|9||City of Leander|w28587025
+Robinson Park|Humphrey Drive, Jollyville|30.4557|-97.7636|0|0|0|1|2|||w269074935
+Rollingwood Municipal Park|Wallis Drive, Rollingwood|30.2753|-97.7861|2|0|1|0|0|||w37294910
+Rosemary Denny Park|East Riviera Drive, Cedar Park|30.4792|-97.8128|0|1|2|0|0|||w29180386
+Round Rock West Park|Round Rock West Drive, Round Rock|30.5027|-97.6925|2|1|0|1|0|tv||w28638253
+Rowan Park|Moral Pass, Georgetown|30.6914|-97.7078|0|0|1|0|0|||w1319651974
+Royal Pointe Park|Candace Loop, Pflugerville|30.4781|-97.6238|0|0|1|0|0|||w722992932
+San Gabriel Park|East Morrow Street, Georgetown|30.6524|-97.6701|0|0|1|3|3|v||w28640647
+San Jose Park|San Jose Street, Georgetown|30.6299|-97.6686|0|0|1|0|0|||w547768509
+San Marcos City Park|East Hopkins Street, San Marcos|29.8848|-97.9347|0|0|1|0|0|||w546922177
+Settlement Park|Clearwater Trail, Round Rock|30.5370|-97.6714|0|0|1|0|0|b||w468900675
+Shenandoah Greenbelt|Lavaca Loop, Elgin|30.3571|-97.4027|0|0|1|0|0|||w1221651861
+Shenandoah Soccer Park|Shenandoah Trail, Elgin|30.3605|-97.3982|0|0|0|0|2|||w1218354402
+Somerville Park|Warner Ranch Drive, Round Rock|30.4824|-97.6531|0|0|1|1|0|||w931794213
+Southeast Metropolitan Park|Travis County|30.1884|-97.6113|0|0|1|0|4||Travis County|w137145032
+Southwest Williamson County Regional Park|Borho, Williamson County|30.5584|-97.7660|8|6|3|0|10|tbsp|Williamson County|w261175400
+Springbrook Glen Community Park|Gantry Drive, Pflugerville|30.4755|-97.6342|0|0|1|1|0|||w589943858
+Stark Park|Provident Lane, Round Rock|30.5231|-97.6643|2|0|0|0|0|||w261177086
+Steeplechase Park|Brandi Circle, Kyle|29.9958|-97.8609|0|0|1|0|1|||w300578122
+Stella Park|Nancy Drive, Round Rock|30.5239|-97.6735|1|0|0|0|0|||w585218151
+Stillwater Park|Coldwater Avenue, Georgetown|30.6561|-97.6501|0|0|1|0|0|||w1223804833
+Stoneridge Park|Stone Rim Loop, Buda|30.0705|-97.8225|0|0|1|0|0|||w556901358
+Stoney Creek Park|Harris Ridge Boulevard, Travis County|30.4202|-97.6445|0|0|0|1|1||Northtown MUD|w444061751
+Sun Tree Park|Eagle Trace Trail, Austin|30.3778|-97.8535|0|0|1|0|1|||w470070620
+Sunset Park|RM 1431, Lago Vista|30.4965|-97.9840|0|0|0|1|1|||w1454563517
+Swift Memorial Park|Monterrey Street, San Marcos|29.8653|-97.9372|0|0|1|0|0|||w1091972626
+Tanglewood Forest Park|Curlew Drive, Austin|30.1772|-97.8335|2|0|0|0|0||Tanglewood Forest Limited District|w559515310
+Taylor Regional Park & Sports Complex|Taylor|30.6059|-97.4245|0|0|0|0|1|s||w660798498
+The Dripping Springs Sports & Recreation Park|Sports Park Road, Dripping Springs|30.1854|-98.0813|0|0|0|0|13|||w654482673
+The Greens Soccer Complex|Avenue K, Marble Falls|30.5751|-98.2788|0|0|0|0|3|s|The City of Marble Falls|w1201814625
+The Park at Lakeline Oaks|Old Mill Road, Cedar Park|30.4748|-97.8234|2|0|1|0|0|||w1318801897
+The Trailhead Park|Mariah Cove, Austin|30.4892|-97.7688|1|0|1|0|0|||w553855532
+Thomas Memorial Park|Madison Street, Elgin|30.3440|-97.3633|0|0|1|0|0|||w590262142
+Twin Lakes Park|South Bell Boulevard, Cedar Park|30.4918|-97.8075|0|0|2|2|2|s||w261177087
+Veteran's Memorial Park|Wheaton Trail, Cedar Park|30.5213|-97.8703|0|8|1|0|0|p||w164232480
+Vista Park|Iceberg Lane, Wells Branch|30.4519|-97.6736|2|0|1|0|0|||w690525548
+Webberville Park|Post Oak Road, Webberville|30.2125|-97.4974|0|0|1|2|2||Travis County|w274728658
+Wells Branch Soccer Complex|Shoreline Drive, Travis County|30.4602|-97.6914|0|0|0|0|3|||w866314678
+West End Neighborhood Park|Vernon Street, Taylor|30.5696|-97.4245|0|0|1|0|0|||w660798489
+Western Oaks Park|Woodcreek Road, Austin|30.2203|-97.8509|2|0|0|0|0|||w386993532
+Wildrose Park|Cluck Creek Trail, Cedar Park|30.4980|-97.8273|0|0|1|0|0|||w1283350603
+Willow Bend Park|Bratton Lane, Wells Branch|30.4549|-97.6805|0|0|1|0|0|||w585195771
+Windermere Park|Isle of Man Road, Pflugerville|30.4582|-97.6420|1|0|1|0|0|bt||w1217151543
+Woodlands Park|Big View Drive, Austin|30.3556|-97.8649|2|0|0|0|0|||w470070619
+`;
+AREA_DATA.trim().split("\n").filter(Boolean).forEach(line=>{
+  const [nm,town,lat,lon,t,p,b,vb,sc,lit,op,osm]=line.split("|");
+  const n={basketball:+b,tennis:+t,pickleball:+p,volleyball:+vb,soccer:+sc},sports=Object.keys(n).filter(k=>n[k]);
+  if(!sports.length)return;
+  const unit={basketball:"basketball court",tennis:"tennis court",pickleball:"pickleball court",volleyball:"volleyball court",soccer:"soccer field"};
+  const feats=sports.map(k=>[k,n[k]+" "+unit[k]+(n[k]===1?"":"s")]);
+  const litNames={t:"tennis",p:"pickleball",b:"basketball",v:"volleyball",s:"fields"},lits=[...(lit||"")].map(c=>litNames[c]).filter(Boolean);
+  if(lits.length)feats.push(["light","Lit: "+lits.join(", ")]);
+  feats.push(["doc",op?"Run by "+op+". Hours shown are typical park hours. Check the posted sign":"Hours shown are typical park hours. May be for residents only, so check the posted sign"]);
+  let id="x-"+(nm+" "+town).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+  while(FEATS[id])id+="-2";
+  VENUES.push({id,kind:"outdoor",src:"osm",name:nm,addr:(town?town+", ":"")+"TX",lat:+lat,lon:+lon,sports,n,hrs:null,
+    url:osm?"https://www.openstreetmap.org/"+(osm[0]==="r"?"relation":"way")+"/"+osm.slice(1):"https://www.openstreetmap.org/#map=17/"+lat+"/"+lon});
+  FEATS[id]=feats});
 const VBY=Object.fromEntries(VENUES.map(v=>[v.id,v]));
 const PLACES=[["Downtown",30.2672,-97.7431],["East Riverside",30.2380,-97.7220],["South Congress",30.2470,-97.7505],["South Lamar",30.2440,-97.7810],
  ["Zilker",30.2640,-97.7700],["East Austin (Holly)",30.2560,-97.7240],["Montopolis",30.2320,-97.6990],["St. Elmo",30.2150,-97.7650],
@@ -582,12 +752,12 @@ function card({v,o,st},n,T){
   if(st.wins.length)st.wins.forEach(w=>wins.append(h("span",{class:"win"+(st.cur===w?" cur":"")},`${fmt(w[0])} to ${fmt(w[1])}`+(w[2]&&v.kind==="indoor"?` · ${w[2]}`:""))));
   else wins.append(h("span",{class:"meta"},"no open play posted"));
   el.append(wins);
-  const feats=(v.kind==="outdoor"?[["walk","First come, first served"]]:[]).concat(FEATS[v.id]||[]);
+  const osm=v.src==="osm",feats=(v.kind==="outdoor"&&!osm?[["walk","First come, first served"]]:[]).concat(FEATS[v.id]||[]);
   if(feats.length)el.append(h("ul",{class:"feats"},feats.map(([k,tx])=>h("li",{class:k==="alert"?"warn":null},icon(k),h("span",null,tx)))));
   const acts=h("div",{class:"acts"});
   if(v.phone)acts.append(h("span",null,"Call "+v.phone));
-  acts.append(h("a",{href:"https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(v.name+", "+v.addr),target:"_blank",rel:"noopener"},"Directions"),
-              h("a",{href:v.kind==="outdoor"&&SPORT_PAGE[state.sport]||v.url,target:"_blank",rel:"noopener"},"City page"));
+  acts.append(h("a",{href:"https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(osm?v.lat+","+v.lon:v.name+", "+v.addr),target:"_blank",rel:"noopener"},"Directions"),
+              h("a",{href:v.kind==="outdoor"&&!osm&&SPORT_PAGE[state.sport]||v.url,target:"_blank",rel:"noopener"},osm?"OpenStreetMap":"City page"));
   if(live.db&&live.canWrite!==false){
     if(st.state==="reported")acts.append(h("button",{class:"btn",type:"button",disabled:ui.busy,onclick:()=>reopen(v.id)},"Mark as open again"));
     else if(ui.report!==v.id)acts.append(h("button",{class:"btn",type:"button",onclick:()=>{ui.report=v.id;ui.msg="";render()}},"Report closed"));}
