@@ -1,0 +1,86 @@
+name: Weekly data refresh
+
+# Runs every Monday morning (about 7:17am Central in winter, 8:17am in summer) and on demand from the Actions tab.
+# 1. Pulls the current park courts and fields from the City of Austin inventory and updates index.html if they changed.
+# 2. Looks at each rec center page for schedule changes and opens an issue when it finds one.
+on:
+  schedule:
+    - cron: "17 13 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+  pages: write
+
+concurrency:
+  group: weekly-data-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Refresh park courts and fields
+        id: parks
+        continue-on-error: true
+        run: node scripts/update-parks.mjs
+
+      - name: Make sure the page still loads its data
+        run: |
+          if ! node scripts/smoke.mjs; then
+            echo "The refreshed park data broke the page. Putting the old data back."
+            git checkout -- index.html
+            node scripts/smoke.mjs
+            echo "PARKS_REVERTED=true" >> "$GITHUB_ENV"
+          fi
+
+      - name: Check rec center schedules
+        id: schedules
+        continue-on-error: true
+        run: node scripts/check-schedules.mjs
+
+      - name: Save changes
+        id: save
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          mkdir -p data
+          git add -A index.html data
+          if git diff --cached --quiet; then
+            echo "Nothing to save."
+          else
+            git commit -m "Weekly data refresh"
+            git push
+            echo "pushed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # A push made by a workflow does not republish a GitHub Pages site on its own, so ask for a build.
+      - name: Republish the site
+        if: steps.save.outputs.pushed == 'true'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X POST "repos/${{ github.repository }}/pages/builds"
+
+      - name: Open an issue when schedules changed
+        if: steps.schedules.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TITLE: ${{ steps.schedules.outputs.title }}
+        run: |
+          open=$(gh issue list --state open --search '"Rec center schedule check" in:title' --json number --jq '.[0].number // empty')
+          if [ -n "$open" ]; then
+            gh issue comment "$open" --body-file schedule-report.md
+          else
+            gh issue create --title "$TITLE" --body-file schedule-report.md
+          fi
+
+      - name: Flag a failed step
+        if: steps.parks.outcome == 'failure' || steps.schedules.outcome == 'failure' || env.PARKS_REVERTED == 'true'
+        run: |
+          echo "::error::Parks refresh: ${{ steps.parks.outcome }}. Schedule check: ${{ steps.schedules.outcome }}. Park data put back: ${PARKS_REVERTED:-false}. Open the steps above for details."
+          exit 1
