@@ -72,6 +72,11 @@
   .hint{color:var(--muted);font-size:13.5px;margin:0}
   .fromrow{display:flex;gap:6px;flex-wrap:wrap}
   .fromrow .btn{min-height:38px}
+  .addr input{flex:1 1 220px;min-width:0}
+  .addrout{display:flex;flex-direction:column;gap:5px;font-size:13.5px;max-width:420px}
+  .addrout:empty{display:none}
+  .addrout .btn{text-align:left;font-weight:600;padding:5px 10px}
+  .addrout small{color:var(--muted)}
 
   .main{display:grid;grid-template-columns:minmax(300px,420px) 1fr;gap:20px;align-items:start}
   .mapcol{position:sticky;top:14px;display:flex;flex-direction:column;gap:10px}
@@ -188,7 +193,12 @@
       <div class="field"><label class="lab" for="radius">Radius</label>
         <div class="radius"><input type="range" id="radius" min="1" max="15" step="1"><output id="radiusOut" for="radius">5 mi</output></div>
       </div>
-      <div class="field"><label class="lab" for="from">Starting from</label><div class="fromrow"><select id="from"></select><button type="button" class="btn" id="locate" hidden>Use my location</button></div></div>
+      <div class="field"><label class="lab" for="from">Starting from</label><div class="fromrow"><select id="from"></select><button type="button" class="btn" id="locate" hidden>Use my location</button></div>
+        <form class="fromrow addr" id="addrForm" hidden>
+          <input type="text" id="addr" placeholder="Or type an Austin address" autocomplete="street-address" aria-label="Austin address" maxlength="120">
+          <button type="submit" class="btn" id="addrGo">Find</button>
+        </form>
+        <div class="addrout" id="addrOut" aria-live="polite"></div></div>
       <div class="field"><label class="lab" for="when">When</label>
         <div style="display:flex;gap:6px;flex-wrap:wrap">
           <select id="when"><option value="now">Right now (live)</option><option value="pick">Pick a day and time</option></select>
@@ -621,6 +631,24 @@ function drawMap(rows){lastRows=rows;if(!map||drawing)return;drawing=true;const 
       icon:L.divIcon({className:"",html:`<div class="pin ${r.v.kind==="outdoor"?"out":"in"} ${r.st.state}"><span>${i+1}</span></div>`,iconSize:[26,26],iconAnchor:[13-dx,13]})})
       .bindTooltip(tip,{direction:"top",offset:[dx,-12]}).on("click",()=>jump(r.v.id)).addTo(pins)});
   drawing=false}
+/* ---------- address search (OpenStreetMap Nominatim, Austin area only) ----------
+   Public service rules: one request per second at most, no search-as-you-type. So it runs on submit only, waits between calls and caches answers. */
+const GEO_BOX="-98.05,30.55,-97.50,30.05";let geoLast=0;const geoCache=new Map();
+function addrSay(...kids){const o=$("addrOut");o.textContent="";kids.flat().forEach(k=>k&&o.append(k.nodeType?k:h("span",null,k)))}
+function addrPick(r){const parts=String(r.display_name||"").split(", "),label=parts.slice(0,2).join(", ")||"Address";
+  $("addr").value=label;addrSay(h("small",null,"Starting from "+label+". Address lookup by OpenStreetMap."));setCustom(+r.lat,+r.lon,label,label)}
+async function findAddress(){const q=$("addr").value.trim().replace(/\s+/g," "),go=$("addrGo");
+  if(q.length<3){addrSay("Type a street address or a place name.");return}
+  let res=geoCache.get(q.toLowerCase());
+  if(!res){go.disabled=true;go.textContent="Finding";
+    try{const wait=1100-(Date.now()-geoLast);if(wait>0)await new Promise(r=>setTimeout(r,wait));geoLast=Date.now();
+      const r=await fetch("https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&countrycodes=us&bounded=1&viewbox="+GEO_BOX+"&q="+encodeURIComponent(q));
+      if(!r.ok)throw new Error(r.status);res=(await r.json()).filter(x=>isFinite(+x.lat)&&isFinite(+x.lon));geoCache.set(q.toLowerCase(),res)}
+    catch(e){addrSay("Address search can't be reached right now. Pick a neighborhood or drag the dark pin on the map.");return}
+    finally{go.disabled=false;go.textContent="Find"}}
+  if(!res.length){addrSay("No match in the Austin area. Try adding a street number or a cross street.");return}
+  if(res.length===1){addrPick(res[0]);return}
+  addrSay(h("small",null,"Which one?"),res.map(r=>h("button",{class:"btn",type:"button",onclick:()=>addrPick(r)},String(r.display_name||"").split(", ").slice(0,4).join(", "))))}
 function setCustom(lat,lon,label,phrase){state.custom={lat,lon,label,phrase};set({from:-1})}
 function locate(){const b=$("locate"),done=()=>{b.disabled=false;b.textContent="Use my location"};b.disabled=true;b.textContent="Finding you";
   navigator.geolocation.getCurrentPosition(pos=>{done();const lat=pos.coords.latitude,lon=pos.coords.longitude;
@@ -699,13 +727,14 @@ function start(saved){
   DAYS.forEach((dn,i)=>$("whenDay").append(h("option",{value:i},dn)));
   document.querySelectorAll("#env button").forEach(b=>b.onclick=()=>set({env:b.dataset.v}));
   $("radius").oninput=e=>set({radius:+e.target.value});
-  $("from").onchange=e=>set({from:+e.target.value});
+  $("from").onchange=e=>{if(+e.target.value>=0){$("addr").value="";addrSay()}set({from:+e.target.value})};
   $("openOnly").onchange=e=>set({openOnly:e.target.checked});
   $("when").onchange=e=>set({when:e.target.value});
   $("whenDay").onchange=e=>set({day:+e.target.value});
   $("whenTime").onchange=e=>{const[a,b]=(e.target.value||"18:00").split(":").map(Number);set({time:a*60+b})};
   SORT_LABELS.forEach(([v,l])=>$("sort").append(h("button",{class:"chip sm",type:"button","data-v":v,onclick:()=>set({sort:v})},l)));
   if(!IN_ARTIFACT&&"geolocation" in navigator){$("locate").hidden=false;$("locate").onclick=locate}
+  if(!IN_ARTIFACT){$("addrForm").hidden=false;$("addrForm").addEventListener("submit",e=>{e.preventDefault();findAddress()})}
   syncControls();initMap();render();tick();setInterval(tick,15000);connect();
   document.addEventListener("focusout",()=>setTimeout(()=>{if(dirty)render(true)},50))}
 function tick(){const n=austin(Date.now());$("clock").textContent=`${DAYS[n.day]} ${fmt(n.mins)} ${zone(Date.now())}`;
