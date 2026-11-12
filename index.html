@@ -232,7 +232,7 @@
     <section aria-live="polite">
       <h1 class="headline" id="headline">Finding courts</h1>
       <div class="sortbar"><span class="lab" id="lab-sort">Sort by</span><div class="chips" id="sort" role="group" aria-labelledby="lab-sort"></div>
-        <input type="search" id="venueQ" class="venueq" placeholder="Search venues" aria-label="Search venues by name or street" maxlength="60" autocomplete="off"></div>
+        <input type="search" id="venueQ" class="venueq" placeholder="Search by name or address" aria-label="Search results by name or address" maxlength="60" autocomplete="off"></div>
       <div class="list" id="list"></div>
     </section>
   </div>
@@ -333,7 +333,9 @@ function icon(k){const sp=document.createElement("span");sp.className="ic";
 /* Outdoor courts and fields: City of Austin parks facility inventory (pard_facility_points), pulled Nov 11, 2026.
    One line per park: name|address|lat|lon|tennis dedicated.shared|pickleball dedicated.shared|basketball|volleyball (n = no net)|
    soccer fields.multipurpose fields.mini pitches|lit sports|flags (F all fee, f some fee, R restricted, Y reservable). */
-const PARK_SRC="https://services.arcgis.com/0L95CJ0VTaxqcmED/ArcGIS/rest/services/pard_facility_points/FeatureServer";
+// Park cards link to the city's page for the selected sport. Basketball has none, so it falls back to the park's row in the city park directory.
+const PARK_DIR="https://www.austintexas.gov/parks/locations/park-directory";
+const SPORT_PAGE={pickleball:PBU,volleyball:VBU,soccer:SOC,tennis:"https://www.austintexas.gov/parks/tennis"};
 const PARK_DATA=`
 A.B. Dittmar Neighborhood Park|1009 W Dittmar Rd 78748|30.1842|-97.8024|0.0|0.0|0|0|0.1.0|s|
 Adams-Hemphill Neighborhood Park|201 W 30th St 78705|30.2944|-97.7391|0.0|0.0|1|0|0.1.0|bs|
@@ -466,7 +468,7 @@ PARK_DATA.trim().split("\n").forEach(line=>{
   (fix.more||[]).forEach(f=>feats.push(f));
   if(!sports.length)return;
   const id=nm.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
-  VENUES.push({id,kind:"outdoor",name:fix.name||nm,addr:ad.replace(/ (\d{5})$/,", Austin, TX $1"),lat:+lat,lon:+lon,url:PARK_SRC,sports,n:{basketball:nb,tennis:tD+tS,pickleball:pD+pS,volleyball:nv,soccer:sF+sM+sP,...fix.count},hrs:fix.hrs||(pD+pS?{pickleball:d(ALL,7,22)}:null)});
+  VENUES.push({id,kind:"outdoor",name:fix.name||nm,addr:ad.replace(/ (\d{5})$/,", Austin, TX $1"),lat:+lat,lon:+lon,url:PARK_DIR+"#"+nm[0].toLowerCase(),sports,n:{basketball:nb,tennis:tD+tS,pickleball:pD+pS,volleyball:nv,soccer:sF+sM+sP,...fix.count},hrs:fix.hrs||(pD+pS?{pickleball:d(ALL,7,22)}:null)});
   FEATS[id]=feats});
 const VBY=Object.fromEntries(VENUES.map(v=>[v.id,v]));
 const PLACES=[["Downtown",30.2672,-97.7431],["East Riverside",30.2380,-97.7220],["South Congress",30.2470,-97.7505],["South Lamar",30.2440,-97.7810],
@@ -553,7 +555,7 @@ function render(soft){
   const list=$("list");list.textContent="";
   if(!rows.length){
     const pool=all.filter(r=>!state.openOnly||r.st.state==="open"||r.st.state==="soon").sort((a,b)=>a.o.dist-b.o.dist)[0];
-    const box=h("div",{class:"empty"},h("strong",null,ui.q.trim()?`No ${sportName} venue matching "${ui.q.trim()}" within ${state.radius} mi.`:`Nothing ${state.openOnly?"open ":""}for ${sportName} within ${state.radius} mi.`));
+    const box=h("div",{class:"empty"},h("strong",null,ui.q.trim()?`No ${sportName} spot matching "${ui.q.trim()}" within ${state.radius} mi.`:`Nothing ${state.openOnly?"open ":""}for ${sportName} within ${state.radius} mi.`));
     if(ui.q.trim())box.append(h("button",{class:"btn",type:"button",onclick:()=>{ui.q="";$("venueQ").value="";prev=null;render()}},"Clear search"));
     if(pool&&pool.o.dist>state.radius&&Math.ceil(pool.o.dist)<=15)box.append(h("span",null,`The closest match is ${pool.v.name}, ${pool.o.dist.toFixed(1)} mi away.`),
       h("button",{class:"btn solid",type:"button",onclick:()=>{set({radius:Math.ceil(pool.o.dist)})}},`Widen to ${Math.ceil(pool.o.dist)} mi`));
@@ -585,7 +587,7 @@ function card({v,o,st},n,T){
   const acts=h("div",{class:"acts"});
   if(v.phone)acts.append(h("span",null,"Call "+v.phone));
   acts.append(h("a",{href:"https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(v.name+", "+v.addr),target:"_blank",rel:"noopener"},"Directions"),
-              h("a",{href:v.url,target:"_blank",rel:"noopener"},"Source"));
+              h("a",{href:v.kind==="outdoor"&&SPORT_PAGE[state.sport]||v.url,target:"_blank",rel:"noopener"},"City page"));
   if(live.db&&live.canWrite!==false){
     if(st.state==="reported")acts.append(h("button",{class:"btn",type:"button",disabled:ui.busy,onclick:()=>reopen(v.id)},"Mark as open again"));
     else if(ui.report!==v.id)acts.append(h("button",{class:"btn",type:"button",onclick:()=>{ui.report=v.id;ui.msg="";render()}},"Report closed"));}
