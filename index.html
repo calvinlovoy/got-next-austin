@@ -203,7 +203,7 @@
   <div class="main">
     <aside class="mapcol" id="mapcol" aria-label="Map of matches" hidden>
       <div id="map"></div>
-      <p class="hint">Drag the dark pin to move your starting point. Tap a numbered pin to jump to its card.</p>
+      <p class="hint">Scroll or pinch to zoom. Drag the dark pin to move your starting point. Tap a numbered pin to jump to its card.</p>
       <div class="legend" role="group" aria-label="Map legend">
         <div class="lrow"><span class="lab">Status</span>
           <span><i style="background:#ee6730"></i>Open</span>
@@ -598,7 +598,7 @@ function reportForm(v){const id=v.id;
 /* ---------- street map (Leaflet + OpenStreetMap) ---------- */
 function initMap(){if(!MAP_OK){document.querySelector(".main").classList.add("nomap");return}
   $("mapcol").hidden=false;const o=origin();
-  map=L.map("map",{scrollWheelZoom:false}).setView([o.lat,o.lon],12);
+  map=L.map("map",{scrollWheelZoom:true,wheelPxPerZoomLevel:100,touchZoom:true}).setView([o.lat,o.lon],12);
   L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}).addTo(map);
   ring=L.circle([o.lat,o.lon],{radius:state.radius*1609.34,color:"#d9531e",weight:3,dashArray:"8 7",fillColor:"#ee6730",fillOpacity:.08,interactive:false}).addTo(map);
   pins=L.layerGroup().addTo(map);
