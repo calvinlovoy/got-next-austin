@@ -232,7 +232,7 @@
     <section aria-live="polite">
       <h1 class="headline" id="headline">Finding courts</h1>
       <div class="sortbar"><span class="lab" id="lab-sort">Sort by</span><div class="chips" id="sort" role="group" aria-labelledby="lab-sort"></div>
-        <input type="search" id="venueQ" class="venueq" placeholder="Search venues" aria-label="Search venues by name or street" maxlength="60" autocomplete="off"></div>
+        <input type="search" id="venueQ" class="venueq" placeholder="Search by name or address" aria-label="Search results by name or address" maxlength="60" autocomplete="off"></div>
       <div class="list" id="list"></div>
     </section>
   </div>
@@ -553,7 +553,7 @@ function render(soft){
   const list=$("list");list.textContent="";
   if(!rows.length){
     const pool=all.filter(r=>!state.openOnly||r.st.state==="open"||r.st.state==="soon").sort((a,b)=>a.o.dist-b.o.dist)[0];
-    const box=h("div",{class:"empty"},h("strong",null,ui.q.trim()?`No ${sportName} venue matching "${ui.q.trim()}" within ${state.radius} mi.`:`Nothing ${state.openOnly?"open ":""}for ${sportName} within ${state.radius} mi.`));
+    const box=h("div",{class:"empty"},h("strong",null,ui.q.trim()?`No ${sportName} spot matching "${ui.q.trim()}" within ${state.radius} mi.`:`Nothing ${state.openOnly?"open ":""}for ${sportName} within ${state.radius} mi.`));
     if(ui.q.trim())box.append(h("button",{class:"btn",type:"button",onclick:()=>{ui.q="";$("venueQ").value="";prev=null;render()}},"Clear search"));
     if(pool&&pool.o.dist>state.radius&&Math.ceil(pool.o.dist)<=15)box.append(h("span",null,`The closest match is ${pool.v.name}, ${pool.o.dist.toFixed(1)} mi away.`),
       h("button",{class:"btn solid",type:"button",onclick:()=>{set({radius:Math.ceil(pool.o.dist)})}},`Widen to ${Math.ceil(pool.o.dist)} mi`));
