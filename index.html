@@ -135,6 +135,7 @@
   details summary{cursor:pointer;color:var(--muted);font-size:14px;font-weight:700}
   .week{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;font-size:14px;margin-top:6px;font-variant-numeric:tabular-nums}
   .week dt{font-weight:700} .week dd{margin:0;color:var(--muted)}
+  .notice{background:var(--surface);border:2px dashed var(--line);border-radius:4px;padding:10px 14px;font-size:14.5px}
   .empty{background:var(--surface);border:2px dashed var(--line);border-radius:4px;padding:18px;display:flex;flex-direction:column;gap:10px;align-items:flex-start}
 
   .board{position:relative;overflow:hidden;background:var(--band);color:var(--band-ink);border-radius:6px;padding:26px 20px 10px}
@@ -533,23 +534,33 @@ const SORT_LABELS=[["near","Nearest"],["open","Open first"],["late","Closes late
 // Courts or fields a venue has for a sport. Rec center gyms count as one unless the city says otherwise.
 const count=(v,s)=>(v.n&&v.n[s])||1;
 const lateKey=r=>r.st.state==="open"||r.st.state==="soon"?10000+r.st.until:r.st.state==="later"?5000-r.st.at:r.st.state==="closed"?1000:0;
-const SORTS={open:(a,b)=>RANK[a.st.state]-RANK[b.st.state]||a.o.dist-b.o.dist,near:(a,b)=>a.o.dist-b.o.dist,
+// Minutes from the chosen time until a place next opens. 0 when it is open, Infinity when nothing is posted.
+function wait(st,T){
+  if(st.state==="open"||st.state==="soon")return 0;
+  if(st.state==="later")return st.at-T.mins;
+  if(st.state==="closed"&&st.nextDay!=null)return((st.nextDay-T.day+7)%7||7)*1440+st.at-T.mins;
+  return Infinity}
+const isOpen=r=>r.st.state==="open"||r.st.state==="soon";
+const SORTS={open:(a,b)=>RANK[a.st.state]-RANK[b.st.state]||a.w-b.w||a.o.dist-b.o.dist,soon:(a,b)=>a.w-b.w||a.o.dist-b.o.dist,near:(a,b)=>a.o.dist-b.o.dist,
   late:(a,b)=>lateKey(b)-lateKey(a)||a.o.dist-b.o.dist,
   most:(a,b)=>count(b.v,state.sport)-count(a.v,state.sport)||a.o.dist-b.o.dist,name:(a,b)=>a.v.name.localeCompare(b.v.name)};
 function compute(){const T=target();
   const q=ui.q.trim().toLowerCase();
-  const all=VENUES.filter(v=>offers(v,state.sport)&&(state.env==="both"||v.kind===state.env)&&(!q||(v.name+" "+v.addr).toLowerCase().includes(q))).map(v=>({v,o:offset(v),st:status(v,state.sport,T)}));
+  const all=VENUES.filter(v=>offers(v,state.sport)&&(state.env==="both"||v.kind===state.env)&&(!q||(v.name+" "+v.addr).toLowerCase().includes(q))).map(v=>{const st=status(v,state.sport,T);return{v,o:offset(v),st,w:wait(st,T)}});
   let rows=all.filter(r=>r.o.dist<=state.radius);
-  if(state.openOnly)rows=rows.filter(r=>r.st.state==="open"||r.st.state==="soon");
-  rows.sort(SORTS[state.sort]||SORTS.open);
-  return{T,rows,all}}
+  // When nothing in range is open at the chosen time, keep everything and lead with what opens soonest.
+  const none=rows.length>0&&!rows.some(isOpen),soonest=none&&!ui.manualSort;
+  if(state.openOnly&&!none)rows=rows.filter(isOpen);
+  rows.sort(soonest?SORTS.soon:(SORTS[state.sort]||SORTS.open));
+  return{T,rows,all,none,soonest}}
 
 /* ---------- render ---------- */
 function render(soft){
   if(soft&&ui.report&&$("list").contains(document.activeElement)){dirty=true;return}
-  dirty=false;const{T,rows,all}=compute();
+  dirty=false;const{T,rows,all,none,soonest}=compute();
   const sportName=SPORTS.find(x=>x[0]===state.sport)[1].toLowerCase();
-  const nOpen=rows.filter(r=>r.st.state==="open"||r.st.state==="soon").length;
+  const nOpen=rows.filter(isOpen).length;
+  document.querySelectorAll("#sort .chip").forEach(b=>{if(b.dataset.v==="soon")b.hidden=!none;b.setAttribute("aria-pressed",String(soonest?b.dataset.v==="soon":b.dataset.v===state.sort))});
   const head=$("headline");head.textContent="";
   head.append(h("b",null,String(nOpen)),` ${nOpen===1?"spot":"spots"} open for ${sportName} `,T.live?"right now":`${DAYS[T.day]} at ${fmt(T.mins)}`);
   const list=$("list");list.textContent="";
@@ -562,6 +573,7 @@ function render(soft){
     else if(state.openOnly)box.append(h("button",{class:"btn solid",type:"button",onclick:()=>set({openOnly:false})},"Show closed ones too"));
     else if(state.env!=="both")box.append(h("button",{class:"btn solid",type:"button",onclick:()=>set({env:"both"})},"Search indoor and outdoor"));
     list.append(box)}
+  if(none)list.append(h("div",{class:"notice"},h("strong",null,`Nothing is open for ${sportName} ${T.live?"right now":`${DAYS[T.day]} at ${fmt(T.mins)}`} within ${state.radius} mi.`),soonest?" Here is what opens soonest.":""));
   rows.forEach((r,i)=>list.append(card(r,i+1,T)));
   drawMap(rows);renderBoard(T);
   lastSig=sig(rows,T);
@@ -712,7 +724,7 @@ async function reopen(id){if(ui.busy||!live.db)return;ui.busy=true;render();
 
 /* ---------- controls ---------- */
 function save(){try{const s={...state};delete s.custom;if(s.from<0)s.from=0;localStorage.setItem("gotnext-v2",JSON.stringify(s))}catch(e){}}
-function set(patch){Object.assign(state,patch);prev=null;save();syncControls();render()}
+function set(patch){if(!("sort" in patch))ui.manualSort=false;Object.assign(state,patch);prev=null;save();syncControls();render()}
 function syncControls(){
   document.querySelectorAll("#sports .chip").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.v===state.sport)));
   document.querySelectorAll("#env button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.v===state.env)));
@@ -742,7 +754,8 @@ function start(saved){
   $("when").onchange=e=>set({when:e.target.value});
   $("whenDay").onchange=e=>set({day:+e.target.value});
   $("whenTime").onchange=e=>{const[a,b]=(e.target.value||"18:00").split(":").map(Number);set({time:a*60+b})};
-  SORT_LABELS.forEach(([v,l])=>$("sort").append(h("button",{class:"chip sm",type:"button","data-v":v,onclick:()=>set({sort:v})},l)));
+  $("sort").append(h("button",{class:"chip sm",type:"button","data-v":"soon",hidden:true,onclick:()=>{ui.manualSort=false;prev=null;render()}},"Opening soonest"));
+  SORT_LABELS.forEach(([v,l])=>$("sort").append(h("button",{class:"chip sm",type:"button","data-v":v,onclick:()=>{ui.manualSort=true;set({sort:v})}},l)));
   if(!IN_ARTIFACT&&"geolocation" in navigator){$("locate").hidden=false;$("locate").onclick=locate}
   $("venueQ").oninput=e=>{ui.q=e.target.value;prev=null;render()};
   if(!IN_ARTIFACT){$("addrForm").hidden=false;$("addrForm").addEventListener("submit",e=>{e.preventDefault();findAddress()})}

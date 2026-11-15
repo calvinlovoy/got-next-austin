@@ -11,6 +11,7 @@ Pick a sport and a distance, and see which Austin courts are open to walk onto r
 - Sort results by nearest, open first, closes latest, most courts (most fields for soccer) or name
 - "Use my location", type an Austin address, or drag the start pin, to measure from where you are
 - Directions links that open Google Maps with the venue as the destination
+- When nothing is open at the chosen time, the list leads with what opens soonest
 - Status that follows the clock in Austin time: cards flip to closed when a session ends, with an alert 30 minutes before
 - A "Pick a day and time" mode for planning ahead
 
