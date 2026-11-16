@@ -1,6 +1,6 @@
 {
  "note": "Written by scripts/check-schedules.mjs. Last week's view of each rec center page, used to spot schedule changes.",
- "lastChecked": "2026-11-12",
+ "lastChecked": "2026-11-16",
  "pages": {
   "https://www.austintexas.gov/parks/locations/montopolis-recreation-and-community-center": {
    "venues": [
@@ -24,7 +24,7 @@
    ],
    "lines": [],
    "fails": 0,
-   "lastOk": "2026-11-12"
+   "lastOk": "2026-11-16"
   },
   "https://www.austintexas.gov/parks/locations/george-morales-dove-springs-recreation-center": {
    "venues": [
@@ -41,7 +41,7 @@
    ],
    "lines": [],
    "fails": 0,
-   "lastOk": "2026-11-12"
+   "lastOk": "2026-11-16"
   },
   "https://www.austintexas.gov/parks/south-austin-recreation-center": {
    "venues": [
@@ -60,7 +60,7 @@
     "Senior Pickleball - Tuesday & Friday 11am-2pm"
    ],
    "fails": 0,
-   "lastOk": "2026-11-12"
+   "lastOk": "2026-11-16"
   },
   "https://www.austintexas.gov/parks/locations/dittmar-recreation-center": {
    "venues": [
@@ -77,7 +77,7 @@
    ],
    "lines": [],
    "fails": 0,
-   "lastOk": "2026-11-12"
+   "lastOk": "2026-11-16"
   },
   "https://www.austintexas.gov/parks/parque-zaragoza-recreation-center": {
    "venues": [
@@ -89,7 +89,7 @@
     "Open Play Pickleball: Wednesday, 12 p.m. to 2 p.m."
    ],
    "fails": 0,
-   "lastOk": "2026-11-12"
+   "lastOk": "2026-11-16"
   },
   "https://austintexas.gov/department/oswaldo-ab-cantupan-american-recreation-center": {
    "venues": [
@@ -100,7 +100,7 @@
     "Open Play Basketball: Saturday 12 p.m. - 4 p.m."
    ],
    "fails": 0,
-   "lastOk": "2026-11-12"
+   "lastOk": "2026-11-16"
   },
   "https://www.austintexas.gov/AustinRec": {
    "venues": [
@@ -127,7 +127,7 @@
     "Open Play Pickleball takes place in the gymnasium on Mondays and Fridays from 9am-11:30am and Wednesday 9am-10:45am. Three indoor courts are available for all skill levels."
    ],
    "fails": 0,
-   "lastOk": "2026-11-12"
+   "lastOk": "2026-11-16"
   },
   "https://www.austintexas.gov/parks/locations/gustavo-gus-l-garcia-recreation-center": {
    "venues": [
@@ -144,7 +144,7 @@
    ],
    "lines": [],
    "fails": 0,
-   "lastOk": "2026-11-12"
+   "lastOk": "2026-11-16"
   },
   "https://www.austintexas.gov/parks/pickleball": {
    "venues": [
@@ -172,7 +172,7 @@
     "Varsity Generation Open Play Tuesday and Friday 11 a.m. to 2 p.m."
    ],
    "fails": 0,
-   "lastOk": "2026-11-12"
+   "lastOk": "2026-11-16"
   },
   "https://www.austintexas.gov/parks/locations/turner-roberts-recreation-center": {
    "venues": [
@@ -183,7 +183,7 @@
     "Open Play Basketball: Tuesday, Thursday, and Friday: 6:00pm - 8:30pm; Saturday 10:00am - 3:30pm; Sunday 1:00pm - 4:30pm (Weeknight evening free play will return August 11th)"
    ],
    "fails": 0,
-   "lastOk": "2026-11-12"
+   "lastOk": "2026-11-16"
   },
   "https://www.austintexas.gov/parks/locations/delores-duffie-recreation-center": {
    "venues": [
@@ -195,7 +195,7 @@
     "Open Play Volleyball: Thursday's 6:00PM - 9:00PM (Subject to change)"
    ],
    "fails": 0,
-   "lastOk": "2026-11-12"
+   "lastOk": "2026-11-16"
   }
  }
 }
