@@ -330,7 +330,7 @@ const IC={
 };
 function icon(k){const sp=document.createElement("span");sp.className="ic";
   sp.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(IC[k]||IC.doc)+'</svg>';return sp}
-/* Outdoor courts and fields: City of Austin parks facility inventory (pard_facility_points), pulled Nov 11, 2026.
+/* Outdoor courts and fields: City of Austin parks facility inventory (pard_facility_points), pulled Nov 23, 2026.
    One line per park: name|address|lat|lon|tennis dedicated.shared|pickleball dedicated.shared|basketball|volleyball (n = no net)|
    soccer fields.multipurpose fields.mini pitches|lit sports|flags (F all fee, f some fee, R restricted, Y reservable). */
 // Park cards link to the city's page for the selected sport. Basketball has none, so it falls back to the park's row in the city park directory.
@@ -338,11 +338,11 @@ const PARK_DIR="https://www.austintexas.gov/parks/locations/park-directory";
 const SPORT_PAGE={pickleball:PBU,volleyball:VBU,soccer:SOC,tennis:"https://www.austintexas.gov/parks/tennis"};
 const PARK_DATA=`
 A.B. Dittmar Neighborhood Park|1009 W Dittmar Rd 78748|30.1842|-97.8024|0.0|0.0|0|0|0.1.0|s|
-Adams-Hemphill Neighborhood Park|201 W 30th St 78705|30.2944|-97.7391|0.0|0.0|1|0|0.1.0|bs|
+Adams-Hemphill Neighborhood Park|201 W 30th St 78705|30.2944|-97.7391|0.0|0.1|1|0|0.1.0|pbs|
 Alamo Pocket Park|2001 E 22nd St 78722|30.2828|-97.7203|0.0|0.3|1|0|0.1.0|spb|
 Austin High Tennis Center|1717 W Cesar Chavez St 78703|30.2746|-97.7689|8.0|3.0|0|0|0.0.0|tp|fRY
 Bailey Neighborhood Park|1101 W 33rd St 78705|30.3022|-97.7472|2.0|0.0|0|1|0.1.0|tvs|
-Balcones District Park|12017 Amherst Dr 78759|30.4127|-97.7187|0.0|0.1|1|1|0.1.0|s|
+Balcones District Park|12017 Amherst Dr 78759|30.4127|-97.7187|0.0|0.0|1|1|0.1.0|s|
 Bartholomew District Park|1901 Shady Brook Ln 78723|30.3033|-97.6954|0.0|0.0|1|0|0.1.0|sb|RY
 Barton Hills School Park|2009 Homedale Dr 78704|30.2557|-97.7826|0.0|0.0|1|0|0.2.0|s|R
 Battlebend Springs Neighborhood Park|121 Sheraton Ave 78745|30.2139|-97.7675|0.0|0.0|1|0|0.0.0|b|
